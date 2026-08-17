@@ -1,21 +1,21 @@
 name: Remove selection helper text
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/remove-selection-helper-20260817.yml
+  issues:
+    types: [opened]
 
 permissions:
   contents: write
 
 jobs:
   patch:
+    if: github.event.issue.title == 'Run selection helper cleanup'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Remove helper sentence
         shell: python
@@ -34,4 +34,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add translator-selection/index.html
           git commit -m "Remove selection helper text"
-          git push
+          git push origin HEAD:main
