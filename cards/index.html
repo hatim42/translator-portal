@@ -1,1 +1,2463 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<!-- translator-cards-build:e2e-final -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>طباعة بطاقات المترجمين</title>
+<style>
+:root {
+  --green:#004b3c;
+  --green2:#00624f;
+  --gold:#b89b3f;
+  --paper:#fffdf7;
+  --line:#d9c98b;
+  --muted:#5b6b64;
+  --scale:1;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:linear-gradient(180deg,#f8f6ee,#ffffff);
+  color:#0c342d;
+  font-family: Tahoma, Arial, sans-serif;
+}
+header {
+  background:linear-gradient(135deg,var(--green),#003329);
+  color:white;
+  padding:22px 16px;
+  text-align:center;
+  border-bottom:5px solid var(--gold);
+}
+header h1 {
+  margin:0;
+  font-size:30px;
+  font-weight:900;
+}
+header p {
+  margin:8px 0 0;
+  color:#f2e8be;
+  font-size:15px;
+}
+main {
+  max-width:1220px;
+  margin:auto;
+  padding:16px;
+  display:grid;
+  grid-template-columns: 430px 1fr;
+  gap:16px;
+  align-items:start;
+}
+.panel {
+  background:white;
+  border:1.5px solid rgba(184,155,63,.45);
+  border-radius:18px;
+  box-shadow:0 8px 28px rgba(0,0,0,.08);
+  overflow:hidden;
+}
+.panel h2 {
+  margin:0;
+  padding:14px 16px;
+  font-size:20px;
+  color:var(--green);
+  border-bottom:1px solid rgba(184,155,63,.35);
+  background:#fffaf0;
+}
+.body {
+  padding:16px;
+}
+.field {
+  margin-bottom:13px;
+}
+label {
+  display:block;
+  font-weight:800;
+  margin-bottom:7px;
+  color:var(--green);
+}
+input, select, textarea {
+  width:100%;
+  border:1.5px solid #d8d8d8;
+  border-radius:12px;
+  padding:11px 12px;
+  font:inherit;
+  background:white;
+}
+textarea { min-height:120px; resize:vertical; }
+.actions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:12px 0;
+}
+button {
+  border:0;
+  border-radius:13px;
+  padding:11px 15px;
+  font:inherit;
+  font-weight:900;
+  cursor:pointer;
+  background:var(--green);
+  color:white;
+}
+button.gold { background:linear-gradient(135deg,var(--gold),#d1b454); color:#14342d; }
+button.secondary { background:#fff8e7; color:var(--green); border:1px solid rgba(184,155,63,.55); }
+button.danger { background:#8f1f1f; }
+button.mini {
+  padding:8px 10px;
+  border-radius:10px;
+  font-size:13px;
+  white-space:nowrap;
+}
+.note {
+  border:2px solid rgba(184,155,63,.45);
+  background:#fffaf0;
+  border-radius:14px;
+  padding:12px;
+  color:#3d514a;
+  line-height:1.7;
+  margin:12px 0;
+}
+.status {
+  background:#effaf5;
+  border-color:#94c7b6;
+  color:#0c5a48;
+  font-weight:900;
+}
+.kpis {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin:12px 0;
+}
+.kpi {
+  text-align:center;
+  background:#fffaf0;
+  border:1px solid rgba(184,155,63,.35);
+  border-radius:14px;
+  padding:10px 6px;
+}
+.kpi strong {
+  display:block;
+  color:var(--green);
+  font-size:26px;
+}
+.names-box {
+  border:2px solid rgba(0,75,60,.25);
+  border-radius:16px;
+  overflow:hidden;
+  background:#fffef9;
+  max-height:680px;
+  overflow-y:auto;
+}
+.emp-head,
+.emp-row {
+  display:grid;
+  grid-template-columns:34px 38px minmax(150px,1.1fr) minmax(130px,.9fr) 58px;
+  gap:7px;
+  align-items:center;
+}
+.emp-head {
+  position:sticky;
+  top:0;
+  z-index:5;
+  background:var(--green);
+  color:white;
+  font-weight:900;
+  padding:10px;
+}
+.emp-row {
+  padding:8px 10px;
+  border-bottom:1px solid #eee1b7;
+}
+.emp-row:nth-child(even) { background:#fffaf0; }
+.emp-check { width:22px; height:22px; margin:auto; }
+.emp-num {
+  font-weight:900;
+  color:var(--gold);
+  text-align:center;
+}
+.emp-name, .emp-dept {
+  padding:8px 9px;
+  border-radius:10px;
+}
+.preview-wrap {
+  overflow:auto;
+  background:#eee9dc;
+  padding:14px;
+  min-height:600px;
+}
+#a4 {
+  width:210mm;
+  margin:auto;
+}
+.print-page {
+  width:210mm;
+  min-height:297mm;
+  background:white;
+  margin:0 auto 16px;
+  padding:14.5mm 18mm;
+  display:grid;
+  grid-template-columns:54mm 54mm 54mm;
+  grid-template-rows:86mm 86mm 86mm;
+  column-gap:6mm;
+  row-gap:5mm;
+  align-content:start;
+  justify-content:center;
+  box-shadow:0 8px 25px rgba(0,0,0,.16);
+}
+.card {
+  width:54mm;
+  height:86mm;
+  border:1.2px solid var(--gold);
+  background:white;
+  overflow:hidden;
+  position:relative;
+  font-family: Tahoma, Arial, sans-serif;
+  text-align:center;
+}
+.card-title {
+  background:var(--green);
+  color:white;
+  font-size:11pt;
+  font-weight:900;
+  padding:4mm 1mm 2.5mm;
+}
+.logo {
+  height:16mm;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:2mm;
+}
+.logo img { max-height:13mm; max-width:40mm; }
+.name-band {
+  background:var(--green);
+  color:white;
+  padding:4mm 2mm;
+  font-size:13pt;
+  font-weight:900;
+  min-height:17mm;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1.25;
+}
+.dept {
+  min-height:18mm;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:2mm;
+  font-size:10.5pt;
+  font-weight:900;
+  color:#17382f;
+  line-height:1.35;
+}
+.exp {
+  border-top:1px solid #e7e0c7;
+  padding:2.5mm 1mm;
+  color:#17382f;
+  font-weight:900;
+}
+.exp small { display:block; font-size:9pt; margin-bottom:1mm; }
+.exp b { font-size:14pt; color:var(--gold); }
+.footer {
+  position:absolute;
+  bottom:0;
+  right:0;
+  left:0;
+  background:var(--green);
+  color:white;
+  padding:2.2mm 1mm;
+  font-size:8.7pt;
+  font-weight:900;
+  line-height:1.3;
+}
+.size-test {
+  width:54mm;
+  height:86mm;
+  border:2px dashed #000;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-weight:900;
+  line-height:1.7;
+}
+@media (max-width: 900px) {
+  main { grid-template-columns:1fr; padding:10px; }
+  header h1 { font-size:24px; }
+  .emp-head,.emp-row {
+    grid-template-columns:32px 34px minmax(130px,1fr) 44px;
+  }
+  .emp-head span:nth-child(4),
+  .emp-row .emp-dept { grid-column:3/5; }
+  .emp-row .mini { grid-column:4; }
+  .preview-wrap { padding:8px; }
+  #a4 { transform:scale(.45); transform-origin:top right; height:140mm; }
+}
+@media print {
+  @page { size:A4 portrait; margin:0; }
+  html, body { margin:0 !important; padding:0 !important; background:white !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  header, .panel:first-child, .preview-toolbar, .no-print { display:none !important; }
+  main, .panel, .body, .preview-wrap, #a4 {
+    display:block !important;
+    margin:0 !important;
+    padding:0 !important;
+    width:210mm !important;
+    max-width:none !important;
+    border:0 !important;
+    box-shadow:none !important;
+    background:white !important;
+    overflow:visible !important;
+  }
+  .print-page {
+    width:210mm !important;
+    height:297mm !important;
+    min-height:297mm !important;
+    margin:0 !important;
+    padding:14.5mm 18mm !important;
+    box-shadow:none !important;
+    page-break-after:always !important;
+    break-after:page !important;
+    transform:scale(var(--scale));
+    transform-origin:top right;
+  }
+  .print-page:last-child { page-break-after:auto !important; break-after:auto !important; }
+  .card { page-break-inside:avoid !important; break-inside:avoid !important; }
+}
+
+/* ===== PRINT FINAL: بطاقات فقط بدون أي تفاصيل ===== */
+@media print {
+  @page { size: A4 portrait; margin: 0; }
+
+  html, body {
+    width: 210mm !important;
+    min-width: 210mm !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  #a4, #a4 * {
+    visibility: visible !important;
+  }
+
+  #a4 {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    left: auto !important;
+    display: block !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    min-width: 210mm !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    transform: none !important;
+    zoom: 1 !important;
+  }
+
+  main, .panel, .body, .preview-wrap {
+    display: block !important;
+    width: 210mm !important;
+    max-width: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    overflow: visible !important;
+    transform: none !important;
+  }
+
+  header,
+  .panel:first-child,
+  .panel h2,
+  .preview-toolbar,
+  .no-print,
+  .note,
+  .status,
+  .kpis,
+  .actions {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .print-page {
+    visibility: visible !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    min-height: 297mm !important;
+    max-height: 297mm !important;
+    margin: 0 !important;
+    padding: 14.5mm 18mm !important;
+    box-sizing: border-box !important;
+    display: grid !important;
+    grid-template-columns: 54mm 54mm 54mm !important;
+    grid-template-rows: 86mm 86mm 86mm !important;
+    column-gap: 6mm !important;
+    row-gap: 5mm !important;
+    align-content: start !important;
+    justify-content: center !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    transform: none !important;
+    zoom: 1 !important;
+  }
+
+  .print-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  .card {
+    visibility: visible !important;
+    width: 54mm !important;
+    height: 86mm !important;
+    min-width: 54mm !important;
+    max-width: 54mm !important;
+    min-height: 86mm !important;
+    max-height: 86mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    transform: none !important;
+    zoom: 1 !important;
+  }
+}
+
+/* ===== E2E VERIFIED PRINT LOCK ===== */
+@media print {
+  @page { size:A4 portrait; margin:0; }
+  html, body {
+    width:210mm !important;
+    min-width:210mm !important;
+    margin:0 !important;
+    padding:0 !important;
+    background:#fff !important;
+    overflow:visible !important;
+    -webkit-print-color-adjust:exact !important;
+    print-color-adjust:exact !important;
+  }
+  body * { visibility:hidden !important; }
+  #a4, #a4 * { visibility:visible !important; }
+  #a4 {
+    position:absolute !important;
+    top:0 !important;
+    right:0 !important;
+    width:210mm !important;
+    min-width:210mm !important;
+    max-width:210mm !important;
+    margin:0 !important;
+    padding:0 !important;
+    background:#fff !important;
+    transform:none !important;
+    zoom:1 !important;
+    box-shadow:none !important;
+    overflow:visible !important;
+  }
+  header,
+  .panel:first-child,
+  .panel h2,
+  .preview-toolbar,
+  .no-print,
+  .note,
+  .status,
+  .kpis,
+  .actions {
+    display:none !important;
+    visibility:hidden !important;
+  }
+  main, .panel, .body, .preview-wrap {
+    display:block !important;
+    width:210mm !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:0 !important;
+    box-shadow:none !important;
+    background:#fff !important;
+    overflow:visible !important;
+    transform:none !important;
+  }
+  .print-page {
+    width:210mm !important;
+    height:297mm !important;
+    min-height:297mm !important;
+    max-height:297mm !important;
+    margin:0 !important;
+    padding:14.5mm 18mm !important;
+    box-sizing:border-box !important;
+    display:grid !important;
+    grid-template-columns:54mm 54mm 54mm !important;
+    grid-template-rows:86mm 86mm 86mm !important;
+    column-gap:6mm !important;
+    row-gap:5mm !important;
+    align-content:start !important;
+    justify-content:center !important;
+    background:#fff !important;
+    box-shadow:none !important;
+    overflow:hidden !important;
+    page-break-after:always !important;
+    break-after:page !important;
+    transform:none !important;
+    zoom:1 !important;
+  }
+  .print-page:last-child { page-break-after:auto !important; break-after:auto !important; }
+  .card {
+    width:54mm !important;
+    height:86mm !important;
+    min-width:54mm !important;
+    max-width:54mm !important;
+    min-height:86mm !important;
+    max-height:86mm !important;
+    overflow:hidden !important;
+    page-break-inside:avoid !important;
+    break-inside:avoid !important;
+    transform:none !important;
+    zoom:1 !important;
+  }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>طباعة بطاقات المترجمين</h1>
+  <p>قائمة الأسماء ظاهرة داخل الصفحة نفسها — بدون انتظار تحميل</p>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>الإعدادات والأسماء</h2>
+    <div class="body">
+      <div class="note status" id="statusBox">الأسماء ظاهرة الآن داخل الصفحة. عدد الأسماء: 102</div>
+
+      <div class="field">
+        <label>عنوان البطاقة</label>
+        <input id="cardTitle" value="بطاقة مترجم" oninput="syncInputValue(this); updateAll()">
+      </div>
+
+      <div class="field">
+        <label>تاريخ انتهاء البطاقة</label>
+        <input id="expiryDate" value="2026-09-01" oninput="syncInputValue(this); updateAll()">
+      </div>
+
+      <div class="field">
+        <label>النص السفلي الثابت</label>
+        <input id="footerText" value="وكالة الشؤون الدعوية والإرشادية بالمسجد النبوي" oninput="syncInputValue(this); updateAll()">
+      </div>
+
+      <div class="field">
+        <label>الإدارة الافتراضية للأسماء الجديدة</label>
+        <select id="defaultDept" onchange="syncSelect(this)">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>معامل تكبير/تصغير الطباعة</label>
+        <select id="printScale" onchange="applyScale(); syncSelect(this)">
+          <option value="1" selected>100%</option>
+          <option value="1.03">103%</option>
+          <option value="1.05">105%</option>
+          <option value="1.08">108%</option>
+          <option value="1.10">110%</option>
+          <option value="0.98">98%</option>
+          <option value="0.95">95%</option>
+        </select>
+      </div>
+
+      <div class="actions no-print">
+        <button class="gold" type="button" onclick="updateAll()">تحديث المعاينة</button>
+        <button type="button" onclick="printCardsOnly()">طباعة البطاقات فقط</button>
+        <button class="secondary" type="button" onclick="downloadStandalone()">تحميل نسخة HTML</button>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><strong id="totalCount">102</strong><span>إجمالي الأسماء</span></div>
+        <div class="kpi"><strong id="selectedCount">102</strong><span>المحددة</span></div>
+        <div class="kpi"><strong id="pageCount">12</strong><span>صفحات</span></div>
+      </div>
+
+      <div class="field">
+        <label>بحث عن اسم</label>
+        <input id="search" placeholder="اكتب جزء من الاسم..." oninput="filterNames(); syncInputValue(this)">
+      </div>
+
+      <div class="actions no-print">
+        <button class="secondary" type="button" onclick="selectAll(true)">تحديد الجميع</button>
+        <button class="secondary" type="button" onclick="selectAll(false)">إلغاء التحديد</button>
+        <button class="secondary" type="button" onclick="invertSelection()">عكس التحديد</button>
+      </div>
+
+      <div class="field no-print">
+        <label>إضافة أسماء جديدة</label>
+        <textarea id="pasteNames" placeholder="الصق الأسماء، كل اسم في سطر..."></textarea>
+        <div class="actions">
+          <button class="secondary" type="button" onclick="addPastedNames()">إضافة الأسماء</button>
+          <button class="secondary" type="button" onclick="selectPastedNames()">تحديد الأسماء الملصقة فقط</button>
+        </div>
+      </div>
+
+      <div class="note">
+        هذه قائمة الأسماء مباشرة. إذا ظهر لك هذا النص فالأسماء موجودة تحت مباشرة.
+      </div>
+
+      <div class="names-box" id="employeeList">
+        <div class="emp-head">
+          <span>✓</span><span>م</span><span>الاسم</span><span>الإدارة</span><span>حذف</span>
+        </div>
+        
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">1</span>
+        <input class="emp-name" value="كوثر يوانديتيو بن وارتومو" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">2</span>
+        <input class="emp-name" value="عبد القهار بخت زرين" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">3</span>
+        <input class="emp-name" value="حافظ محمد بنيامين نجم" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">4</span>
+        <input class="emp-name" value="سهيل أحمد شكيل أحمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">5</span>
+        <input class="emp-name" value="عبد الله أنيس الرحمن" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">6</span>
+        <input class="emp-name" value="عبيد الله عبد الغفور" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">7</span>
+        <input class="emp-name" value="حبيب الله البلوشي" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">8</span>
+        <input class="emp-name" value="اغستيار نوغراها عبدالله فقير" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">9</span>
+        <input class="emp-name" value="زكريا حسين محمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">10</span>
+        <input class="emp-name" value="محمد زكريا حاجي" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">11</span>
+        <input class="emp-name" value="محمد عرفان نور الدين" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>مكتب إرشاد الزائرين</option>
+<option>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">12</span>
+        <input class="emp-name" value="محمد عليم الدين يوسف" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">13</span>
+        <input class="emp-name" value="سليمان عبدالوهاب حنيف" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">14</span>
+        <input class="emp-name" value="شكيل الرحمن" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">15</span>
+        <input class="emp-name" value="خبيب أحمد زاهر أحمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">16</span>
+        <input class="emp-name" value="أفسر أحمد عبدالرؤوف" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">17</span>
+        <input class="emp-name" value="شرف الدين محمد جامع" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">18</span>
+        <input class="emp-name" value="محمد ياسر محمد هارون" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">19</span>
+        <input class="emp-name" value="مظفر الإسلام محمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">20</span>
+        <input class="emp-name" value="غلام الله عبد القادر" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">21</span>
+        <input class="emp-name" value="أحمد محمد حيدر عبده" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">22</span>
+        <input class="emp-name" value="عبدالشكور علي أكبر" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">23</span>
+        <input class="emp-name" value="معاذ أحمد محمد النظامي" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">24</span>
+        <input class="emp-name" value="مجيب الرحمن مسلمان" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">25</span>
+        <input class="emp-name" value="حافظ عبدالحق فقير محمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">26</span>
+        <input class="emp-name" value="عامر صافي" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">27</span>
+        <input class="emp-name" value="عبد الوكيل جميل أحمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">28</span>
+        <input class="emp-name" value="عبد القادر نثار أحمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">29</span>
+        <input class="emp-name" value="محمد المحمود الانصاري" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">30</span>
+        <input class="emp-name" value="يوسف عبد اللطيف" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">31</span>
+        <input class="emp-name" value="مبونمبا رمضان" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">32</span>
+        <input class="emp-name" value="حسام الدين محمد أمين" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">33</span>
+        <input class="emp-name" value="محمد عبد الباسط" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">34</span>
+        <input class="emp-name" value="بركة الله شويوف" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">35</span>
+        <input class="emp-name" value="محمد باغوس ال باسير" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">36</span>
+        <input class="emp-name" value="جبران احمد ضمير احمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">37</span>
+        <input class="emp-name" value="حبيب الرحمن احمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">38</span>
+        <input class="emp-name" value="صفي الرحمن" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">39</span>
+        <input class="emp-name" value="عبد الله شيخ" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">40</span>
+        <input class="emp-name" value="مظفر الإسلام محمد طيب" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">41</span>
+        <input class="emp-name" value="ابراهيم يعقوب باكاري" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">42</span>
+        <input class="emp-name" value="محمد سعيد رحمت كل" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">43</span>
+        <input class="emp-name" value="عبدالحكيم عبدالله ميلافيا" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">44</span>
+        <input class="emp-name" value="محمد لقمان عبد الستار" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">45</span>
+        <input class="emp-name" value="شاهنواز صادق محمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">46</span>
+        <input class="emp-name" value="عبدالودود عبدالرحمن توري" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">47</span>
+        <input class="emp-name" value="لقمان يعقوب أحمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">48</span>
+        <input class="emp-name" value="وسيم أحمد عبد الرؤوف" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">49</span>
+        <input class="emp-name" value="محمد مستقيم" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">50</span>
+        <input class="emp-name" value="حامد محمد حيدر" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">51</span>
+        <input class="emp-name" value="إكرام الدين ولي محمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">52</span>
+        <input class="emp-name" value="أنيس الرحمن راعين" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">53</span>
+        <input class="emp-name" value="فيضان عالم مهتاب عالم" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">54</span>
+        <input class="emp-name" value="نصير أحمد خان هندي" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">55</span>
+        <input class="emp-name" value="ألييو سيسي" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">56</span>
+        <input class="emp-name" value="فرقان بركة الله" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">57</span>
+        <input class="emp-name" value="محمد زكريا حاجي عطا الله" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">58</span>
+        <input class="emp-name" value="ادريس حامد صالح هرفه" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">59</span>
+        <input class="emp-name" value="فواز محمد الراجي عاقب" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">60</span>
+        <input class="emp-name" value="سليمان عبد الوهاب" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">61</span>
+        <input class="emp-name" value="عبيد الله عبدالغفور" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">62</span>
+        <input class="emp-name" value="عيسى يوسفا" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">63</span>
+        <input class="emp-name" value="وسيم احمد عبد الرؤوف" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">64</span>
+        <input class="emp-name" value="أفسر أحمد عبد الرؤوف" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">65</span>
+        <input class="emp-name" value="محمد أحمد رحمة قدرة" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">66</span>
+        <input class="emp-name" value="رحمت الله محمد قدوس" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">67</span>
+        <input class="emp-name" value="سعود عزيز" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">68</span>
+        <input class="emp-name" value="مسعود الرحمن" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">69</span>
+        <input class="emp-name" value="محمد بلال احمد ديسائي" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">70</span>
+        <input class="emp-name" value="حافظ عبدالحي فقير" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">71</span>
+        <input class="emp-name" value="ذوالفقار إبراهيم الميمني" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">72</span>
+        <input class="emp-name" value="مرتضى يعقوب إبراهيم" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">73</span>
+        <input class="emp-name" value="معراج الدين بري" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">74</span>
+        <input class="emp-name" value="يحيى زكريا يحيى" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">75</span>
+        <input class="emp-name" value="هيكل محمد أنوار زين" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">76</span>
+        <input class="emp-name" value="شريف الدين إلياس تاركينه" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">77</span>
+        <input class="emp-name" value="حبيب الله بخش البلوشي" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">78</span>
+        <input class="emp-name" value="إكرام الحق انعام" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">79</span>
+        <input class="emp-name" value="محفوظ الرحمن ميان" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">80</span>
+        <input class="emp-name" value="عبد الرحمن مجتبى" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">81</span>
+        <input class="emp-name" value="أمير أحمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">82</span>
+        <input class="emp-name" value="عبدالحكيم عبدالرحمن" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">83</span>
+        <input class="emp-name" value="محمد محمد قاسم" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">84</span>
+        <input class="emp-name" value="مجتبى علم محمد عريف" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">85</span>
+        <input class="emp-name" value="محمد بشير أديوالي لقمان" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">86</span>
+        <input class="emp-name" value="وحيد الإسلام" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">87</span>
+        <input class="emp-name" value="بي محمد موسى صاحب" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">88</span>
+        <input class="emp-name" value="محمد عبيد دار" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">89</span>
+        <input class="emp-name" value="سهيل فيضان الله" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">90</span>
+        <input class="emp-name" value="ضياء الله محمد احسان" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">91</span>
+        <input class="emp-name" value="أجمل حسين" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">92</span>
+        <input class="emp-name" value="محمد احمد ظهير" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">93</span>
+        <input class="emp-name" value="احمد شمس الرحمن" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>مركز التوعية</option>
+<option>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">94</span>
+        <input class="emp-name" value="محمد سعيد ولد رحمت" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">95</span>
+        <input class="emp-name" value="حاجييف عمر" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">96</span>
+        <input class="emp-name" value="حسام الدين محد أمين" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">97</span>
+        <input class="emp-name" value="محمد لقمان يعقوب" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">98</span>
+        <input class="emp-name" value="محمد زكريا حاجي عطاالله" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">99</span>
+        <input class="emp-name" value="إبراهيم يعقوب باكاري" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">100</span>
+        <input class="emp-name" value="غلام الله عبدالقادر" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>مركز التوعية</option>
+<option>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">101</span>
+        <input class="emp-name" value="أحمد محمد حيدر عبده" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+
+      <div class="emp-row" data-row="1">
+        <input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">
+        <span class="emp-num">102</span>
+        <input class="emp-name" value="جبران احمد ضمير احمد" oninput="syncInputValue(this); updateAll()">
+        <select class="emp-dept" onchange="syncSelect(this); updateAll()">
+          <option selected>الإدارة العامة للأمر بالمعروف والنهي عن المنكر</option>
+<option>مركز التوعية</option>
+<option>مكتب الإهداء</option>
+<option>مكتب إرشاد الزائرين</option>
+<option>مكتب إجابة السائلين</option>
+        </select>
+        <button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>المعاينة النهائية</h2>
+    
+    <div class="preview-wrap">
+      <div id="a4"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+var logoSrc = "";
+var departments = ["الإدارة العامة للأمر بالمعروف والنهي عن المنكر", "مركز التوعية", "مكتب الإهداء", "مكتب إرشاد الزائرين", "مكتب إجابة السائلين"];
+
+function byId(id) { return document.getElementById(id); }
+
+function syncInputValue(el) {
+  try { el.setAttribute("value", el.value); } catch(e) {}
+}
+
+function syncSelect(el) {
+  try {
+    var opts = el.options;
+    for(var i=0;i<opts.length;i++) {
+      if(opts[i].selected) opts[i].setAttribute("selected","selected");
+      else opts[i].removeAttribute("selected");
+    }
+  } catch(e) {}
+}
+
+function esc(s) {
+  s = String(s == null ? "" : s);
+  return s.replace(/[&<>"']/g, function(m) {
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m];
+  });
+}
+
+function norm(s) {
+  s = String(s == null ? "" : s);
+  s = s.replace(/[أإآ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه").replace(/ؤ/g, "و").replace(/ئ/g, "ي");
+  s = s.replace(/[ًٌٍَُِّْـ]/g, "");
+  s = s.replace(/[\s\u200f\u200e]+/g, " ");
+  s = s.replace(/[،,.;:()\[\]{}]/g, "");
+  return s.trim();
+}
+
+function formatDate(v) {
+  if(!v) return "";
+  var p = String(v).split("-");
+  if(p.length === 3) return p[2] + "/" + p[1] + "/" + p[0];
+  return v;
+}
+
+function getRows() {
+  var all = document.querySelectorAll(".emp-row");
+  var rows = [];
+  for(var i=0;i<all.length;i++) {
+    if(all[i].getAttribute("data-row") === "1") rows.push(all[i]);
+  }
+  return rows;
+}
+
+function rowData(row) {
+  return {
+    checked: row.querySelector(".emp-check").checked,
+    name: row.querySelector(".emp-name").value,
+    dept: row.querySelector(".emp-dept").value
+  };
+}
+
+function deptText(dept) {
+  if(dept === "الإدارة العامة للأمر بالمعروف والنهي عن المنكر") return "مترجم في الإدارة العامة للأمر بالمعروف والنهي عن المنكر";
+  return dept;
+}
+
+function cardHtml(name, dept, title, date, footer) {
+  var d = deptText(dept);
+  var nlen = name.length;
+  var nameSize = nlen > 27 ? "10.5pt" : (nlen > 22 ? "11.5pt" : (nlen > 17 ? "12.5pt" : "14pt"));
+  var dlen = d.length;
+  var deptSize = dlen > 52 ? "8.7pt" : (dlen > 36 ? "9.7pt" : "11.5pt");
+  return '<div class="card">' +
+    '<div class="card-title">' + esc(title) + '</div>' +
+    '<div class="logo"><img src="' + logoSrc + '"></div>' +
+    '<div class="name-band" style="font-size:' + nameSize + '">' + esc(name) + '</div>' +
+    '<div class="dept" style="font-size:' + deptSize + '">' + esc(d) + '</div>' +
+    '<div class="exp"><small>تاريخ انتهاء البطاقة</small><b>' + esc(date) + '</b></div>' +
+    '<div class="footer">' + esc(footer) + '</div>' +
+    '</div>';
+}
+
+function updateAll() {
+  applyScale();
+  updateNumbers();
+  renderCards();
+}
+
+function updateNumbers() {
+  var rows = getRows();
+  var visibleTotal = rows.length;
+  var selected = 0;
+  for(var i=0;i<rows.length;i++) {
+    if(rows[i].querySelector(".emp-check").checked) selected++;
+    rows[i].querySelector(".emp-num").textContent = i + 1;
+  }
+  byId("totalCount").textContent = visibleTotal;
+  byId("selectedCount").textContent = selected;
+  byId("pageCount").textContent = Math.max(1, Math.ceil(selected / 9));
+  byId("statusBox").textContent = "الأسماء ظاهرة الآن داخل الصفحة. عدد الأسماء: " + visibleTotal;
+}
+
+function renderCards() {
+  var title = byId("cardTitle").value || "بطاقة مترجم";
+  var date = formatDate(byId("expiryDate").value);
+  var footer = byId("footerText").value || "";
+  var rows = getRows();
+  var cards = [];
+  for(var i=0;i<rows.length;i++) {
+    var d = rowData(rows[i]);
+    if(d.checked && d.name.trim()) cards.push(cardHtml(d.name.trim(), d.dept, title, date, footer));
+  }
+  var html = "";
+  for(var j=0;j<cards.length;j+=9) {
+    html += '<div class="print-page">' + cards.slice(j, j+9).join("") + '</div>';
+  }
+  if(!html) html = '<div class="print-page"><div class="size-test">لا توجد أسماء محددة</div></div>';
+  byId("a4").innerHTML = html;
+}
+
+function filterNames() {
+  var q = norm(byId("search").value);
+  var rows = getRows();
+  for(var i=0;i<rows.length;i++) {
+    var name = rows[i].querySelector(".emp-name").value;
+    rows[i].style.display = (!q || norm(name).indexOf(q) !== -1) ? "" : "none";
+  }
+}
+
+function selectAll(v) {
+  var rows = getRows();
+  for(var i=0;i<rows.length;i++) rows[i].querySelector(".emp-check").checked = !!v;
+  updateAll();
+}
+
+function invertSelection() {
+  var rows = getRows();
+  for(var i=0;i<rows.length;i++) {
+    var c = rows[i].querySelector(".emp-check");
+    c.checked = !c.checked;
+  }
+  updateAll();
+}
+
+function deleteRow(btn) {
+  var row = btn;
+  while(row && row.className.indexOf("emp-row") === -1) row = row.parentNode;
+  if(row) row.parentNode.removeChild(row);
+  updateAll();
+}
+
+function makeDeptSelect(selected) {
+  var s = '<select class="emp-dept" onchange="syncSelect(this); updateAll()">';
+  for(var i=0;i<departments.length;i++) {
+    var sel = departments[i] === selected ? ' selected' : '';
+    s += '<option' + sel + '>' + esc(departments[i]) + '</option>';
+  }
+  return s + '</select>';
+}
+
+function addOneName(name, dept) {
+  name = String(name || "").trim();
+  if(!name) return false;
+  var rows = getRows();
+  var key = norm(name);
+  for(var i=0;i<rows.length;i++) {
+    if(norm(rows[i].querySelector(".emp-name").value) === key) return false;
+  }
+  var div = document.createElement("div");
+  div.className = "emp-row";
+  div.setAttribute("data-row", "1");
+  div.innerHTML = '<input class="emp-check" type="checkbox" checked onchange="updateAll()" aria-label="تحديد">' +
+    '<span class="emp-num"></span>' +
+    '<input class="emp-name" value="' + esc(name) + '" oninput="syncInputValue(this); updateAll()">' +
+    makeDeptSelect(dept) +
+    '<button type="button" class="mini danger" onclick="deleteRow(this)">حذف</button>';
+  byId("employeeList").appendChild(div);
+  return true;
+}
+
+function addPastedNames() {
+  var txt = byId("pasteNames").value || "";
+  var lines = txt.split(/\r?\n/);
+  var dept = byId("defaultDept").value;
+  var added = 0;
+  for(var i=0;i<lines.length;i++) {
+    var name = lines[i].replace(/^\s*\d+[\-.\)]?\s*/, "").trim();
+    if(addOneName(name, dept)) added++;
+  }
+  alert("تمت إضافة " + added + " اسم جديد.");
+  updateAll();
+}
+
+function selectPastedNames() {
+  var txt = byId("pasteNames").value || "";
+  var lines = txt.split(/\r?\n/);
+  var keys = {};
+  for(var i=0;i<lines.length;i++) {
+    var name = lines[i].replace(/^\s*\d+[\-.\)]?\s*/, "").trim();
+    if(name) keys[norm(name)] = true;
+  }
+  var rows = getRows();
+  for(var j=0;j<rows.length;j++) {
+    var n = rows[j].querySelector(".emp-name").value;
+    rows[j].querySelector(".emp-check").checked = !!keys[norm(n)];
+  }
+  updateAll();
+}
+
+function applyScale() {
+  var v = byId("printScale").value || "1";
+  document.documentElement.style.setProperty("--scale", v);
+}
+
+
+function printCardsOnly() {
+  updateAll();
+
+  var cardsHtml = byId("a4").innerHTML;
+  if(!cardsHtml || cardsHtml.indexOf("card") === -1) {
+    alert("لا توجد بطاقات محددة للطباعة.");
+    return;
+  }
+
+  var oldFrame = document.getElementById("printOnlyFrame");
+  if(oldFrame) oldFrame.remove();
+
+  var iframe = document.createElement("iframe");
+  iframe.id = "printOnlyFrame";
+  iframe.style.position = "fixed";
+  iframe.style.left = "-10000px";
+  iframe.style.top = "0";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.border = "0";
+  document.body.appendChild(iframe);
+
+  var doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write(`<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>طباعة البطاقات</title>
+<style>
+  @page { size:A4 portrait; margin:0; }
+  * { box-sizing:border-box; }
+  html, body {
+    margin:0;
+    padding:0;
+    width:210mm;
+    background:#fff;
+    font-family:Tahoma, Arial, sans-serif;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  .print-page {
+    width:210mm;
+    height:297mm;
+    margin:0;
+    padding:14.5mm 18mm;
+    display:grid;
+    grid-template-columns:54mm 54mm 54mm;
+    grid-template-rows:86mm 86mm 86mm;
+    column-gap:6mm;
+    row-gap:5mm;
+    align-content:start;
+    justify-content:center;
+    background:#fff;
+    overflow:hidden;
+    page-break-after:always;
+    break-after:page;
+  }
+  .print-page:last-child { page-break-after:auto; break-after:auto; }
+  .card {
+    width:54mm;
+    height:86mm;
+    min-width:54mm;
+    max-width:54mm;
+    min-height:86mm;
+    max-height:86mm;
+    margin:0;
+    padding:0;
+    border:1.2px solid #b89b3f;
+    background:#fff;
+    overflow:hidden;
+    position:relative;
+    text-align:center;
+    page-break-inside:avoid;
+    break-inside:avoid;
+  }
+  .card-title {
+    background:#004b3c;
+    color:white;
+    font-size:11pt;
+    font-weight:900;
+    padding:4mm 1mm 2.5mm;
+  }
+  .logo {
+    height:16mm;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:2mm;
+  }
+  .logo img { max-height:13mm; max-width:40mm; }
+  .name-band {
+    background:#004b3c;
+    color:white;
+    padding:4mm 2mm;
+    font-weight:900;
+    min-height:17mm;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    line-height:1.25;
+  }
+  .dept {
+    min-height:18mm;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:2mm;
+    font-weight:900;
+    color:#17382f;
+    line-height:1.35;
+  }
+  .exp {
+    border-top:1px solid #e7e0c7;
+    padding:2.5mm 1mm;
+    color:#17382f;
+    font-weight:900;
+  }
+  .exp small { display:block; font-size:9pt; margin-bottom:1mm; }
+  .exp b { font-size:14pt; color:#b89b3f; }
+  .footer {
+    position:absolute;
+    bottom:0;
+    right:0;
+    left:0;
+    background:#004b3c;
+    color:white;
+    padding:2.2mm 1mm;
+    font-size:8.7pt;
+    font-weight:900;
+    line-height:1.3;
+  }
+</style>
+</head>
+<body>${cardsHtml}</body>
+</html>`);
+  doc.close();
+
+  setTimeout(function() {
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  }, 250);
+}
+function downloadStandalone() {
+  updateAll();
+  var rows = getRows();
+  for(var i=0;i<rows.length;i++) {
+    syncInputValue(rows[i].querySelector(".emp-name"));
+    syncSelect(rows[i].querySelector(".emp-dept"));
+    var c = rows[i].querySelector(".emp-check");
+    if(c.checked) c.setAttribute("checked","checked"); else c.removeAttribute("checked");
+  }
+  syncInputValue(byId("cardTitle"));
+  syncInputValue(byId("expiryDate"));
+  syncInputValue(byId("footerText"));
+  syncSelect(byId("defaultDept"));
+  syncSelect(byId("printScale"));
+  var blob = new Blob(["<!DOCTYPE html>\n" + document.documentElement.outerHTML], {type:"text/html;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "بطاقات_المترجمين.html";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); document.body.removeChild(a); }, 1000);
+}
+
+try {
+  updateAll();
+} catch(err) {
+  byId("statusBox").textContent = "ظهرت مشكلة في المعاينة فقط، لكن الأسماء موجودة ظاهرة في القائمة.";
+}
+</script>
+</body>
+</html>
