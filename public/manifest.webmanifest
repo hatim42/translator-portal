@@ -1,0 +1,22 @@
+{
+  "name": "منصة إدارة المترجمين",
+  "short_name": "المترجمون",
+  "description": "الورديات والطلبات والإحصاءات والمتابعة للمترجمين.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f3f5f2",
+  "theme_color": "#083d34",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/religious-affairs-logo.jpg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}
