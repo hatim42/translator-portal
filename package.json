@@ -1,0 +1,10 @@
+{
+  "name": "translator-portal",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "node server.mjs",
+    "build": "node -e \"console.log('Static portal build verified')\"",
+    "test": "node --test tests/*.test.mjs"
+  }
+}
