@@ -13,6 +13,42 @@ test.describe.serial("translator operations", () => {
     await api.dispose();
   });
 
+  test("production login creates secure owner and translator sessions", async ({ browser, baseURL }) => {
+    const person = translatorSeeds[0];
+    const context = await browser.newContext({ baseURL });
+    const page = await context.newPage();
+    await page.goto("/");
+    await expect(page.getByRole("heading", { name: "مرحباً بك" })).toBeVisible();
+
+    await page.getByRole("button", { name: "المالك", exact: true }).click();
+    await page.getByTestId("login-code").fill("E2E-OWNER-CODE-2026");
+    await page.getByTestId("login-submit").click();
+    await expect(page.getByTestId("user-name")).toHaveText("المالك");
+
+    await page.getByRole("button", { name: "المترجمون", exact: true }).first().click();
+    const personCard = page.locator(".person-card").filter({ hasText: person.name });
+    await personCard.getByRole("button", { name: "إنشاء رمز", exact: true }).click();
+    const accessCode = (await page.getByTestId("invite-code").textContent())?.trim();
+    expect(accessCode).toMatch(/^[A-Z2-9]{12}$/);
+    await page.getByRole("dialog").locator(".modal-close").click();
+
+    await page.getByRole("button", { name: "تسجيل الخروج" }).click();
+    await expect(page.getByRole("heading", { name: "مرحباً بك" })).toBeVisible();
+    await page.getByTestId("login-username").fill(person.username);
+    await page.getByTestId("login-code").fill(accessCode!);
+    await page.getByTestId("login-submit").click();
+    await expect(page.getByTestId("user-name")).toHaveText(person.name);
+
+    await context.close();
+    const resetApi = await request.newContext({
+      baseURL,
+      extraHTTPHeaders: { "x-e2e-user": "owner" },
+    });
+    const reset = await resetApi.post("/api/portal", { data: { action: "e2e-reset" } });
+    expect(reset.ok()).toBeTruthy();
+    await resetApi.dispose();
+  });
+
   test("all 46 translators can sign in and submit monthly preferences", async ({ browser, baseURL }) => {
     for (const [index, person] of translatorSeeds.entries()) {
       const context = await browser.newContext({

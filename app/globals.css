@@ -40,6 +40,7 @@ svg { width: 20px; height: 20px; stroke-width: 1.8; }
 .icon-btn:hover { color: var(--green-800); border-color: #a9c5bb; }
 .eyebrow { margin: 0 0 5px; color: var(--gold-700); font-size: 12px; font-weight: 900; }
 .text-link { color: var(--green-800); font-weight: 800; text-align: center; }
+.plain-button { padding: 0; border: 0; background: transparent; cursor: pointer; }
 
 .center-screen { min-height: 100svh; display: grid; place-content: center; justify-items: center; gap: 22px; padding: 24px; text-align: center; }
 .loading-logo { width: min(360px, 76vw); height: 120px; object-fit: contain; }
@@ -63,6 +64,10 @@ svg { width: 20px; height: 20px; stroke-width: 1.8; }
 .auth-panel > small { color: var(--muted); text-align: center; }
 .auth-panel label, .form-panel label { display: grid; gap: 7px; color: #34443e; font-weight: 800; }
 .auth-panel input, .form-panel input, .form-panel select, .form-panel textarea, .data-table select, .person-card select { width: 100%; min-height: 44px; padding: 10px 12px; color: var(--ink); border: 1px solid #c9d4d0; border-radius: 6px; background: #fff; }
+.auth-modes { width: 100%; margin: 2px 0 4px; }
+.auth-modes button { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.auth-error { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; color: #8a2635; border: 1px solid #efc3ca; border-radius: 6px; background: #fff4f5; font-size: 13px; font-weight: 700; line-height: 1.6; }
+.auth-error svg { flex: 0 0 17px; margin-top: 2px; }
 .form-panel textarea { min-height: 100px; resize: vertical; }
 
 .app-shell { min-height: 100svh; display: grid; grid-template: 72px minmax(0, 1fr) / 244px minmax(0, 1fr); }

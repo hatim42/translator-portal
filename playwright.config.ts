@@ -18,7 +18,8 @@ export default defineConfig({
   webServer: {
     command: "npm run dev -- --port 4173",
     url: "http://localhost:4173",
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 120_000,
+    env: { OWNER_ACCESS_CODE: "E2E-OWNER-CODE-2026" },
   },
 });

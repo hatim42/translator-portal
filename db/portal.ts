@@ -22,6 +22,16 @@ type AppUserRow = {
   translator_id: number | null;
 };
 
+type SessionUserRow = AppUserRow & {
+  token_hash: string;
+  expires_at: string;
+};
+
+export const SESSION_COOKIE_NAME = "__Host-translator_portal_session";
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const MAX_LOGIN_ATTEMPTS = 8;
+
 const SHIFTS = ["الوردية الأولى · 5 م - 11 م", "الوردية الثانية · 9 م - 3 ص", "وردية مرنة حسب الاحتياج"] as const;
 const REST_DAYS = ["الجمعة", "السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس"] as const;
 const DEFAULT_SHIFTS = SHIFTS.slice(0, 2);
@@ -47,6 +57,24 @@ const schemaStatements = [
     translator_id INTEGER UNIQUE REFERENCES translators(id),
     created_at TEXT NOT NULL,
     last_seen_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS portal_sessions (
+    token_hash TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES app_users(user_id),
+    created_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS translator_credentials (
+    translator_id INTEGER PRIMARY KEY REFERENCES translators(id),
+    code_hash TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS login_attempts (
+    key_hash TEXT PRIMARY KEY,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    window_started_at TEXT NOT NULL,
+    last_attempt_at TEXT NOT NULL
   )`,
   `CREATE TABLE IF NOT EXISTS invite_codes (
     translator_id INTEGER PRIMARY KEY REFERENCES translators(id),
@@ -113,6 +141,8 @@ const schemaStatements = [
   `CREATE INDEX IF NOT EXISTS idx_translators_language_group ON translators(language_group)`,
   `CREATE INDEX IF NOT EXISTS idx_translators_group_name ON translators(group_name)`,
   `CREATE INDEX IF NOT EXISTS idx_app_users_role ON app_users(role)`,
+  `CREATE INDEX IF NOT EXISTS idx_portal_sessions_user ON portal_sessions(user_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_portal_sessions_expiry ON portal_sessions(expires_at)`,
   `CREATE INDEX IF NOT EXISTS idx_preferences_cycle ON preferences(cycle)`,
   `CREATE INDEX IF NOT EXISTS idx_requests_status_created ON requests(status, created_at)`,
   `CREATE INDEX IF NOT EXISTS idx_requests_translator_created ON requests(translator_id, created_at)`,
@@ -171,6 +201,88 @@ export function identityFromRequest(request: Request): PortalIdentity | null {
   return { userId, email, displayName, e2eUsername: null };
 }
 
+export async function resolveRequestSession(
+  db: D1Database,
+  request: Request,
+): Promise<PortalSession | null> {
+  const externalIdentity = identityFromRequest(request);
+  if (externalIdentity) return resolvePortalSession(db, externalIdentity);
+
+  const token = readCookie(request, SESSION_COOKIE_NAME);
+  if (!token) return null;
+
+  const now = new Date().toISOString();
+  const tokenHash = await hashValue(token);
+  const row = await db.prepare(
+    `SELECT s.token_hash, s.expires_at,
+      u.user_id, u.email, u.display_name, u.role, u.translator_id
+     FROM portal_sessions s
+     JOIN app_users u ON u.user_id = s.user_id
+     WHERE s.token_hash = ?`,
+  ).bind(tokenHash).first<SessionUserRow>();
+
+  if (!row || row.expires_at <= now) {
+    await db.prepare("DELETE FROM portal_sessions WHERE token_hash = ?").bind(tokenHash).run();
+    return null;
+  }
+
+  const role = row.role === "owner" ? "owner" : "translator";
+  if (role === "translator" && !row.translator_id) return null;
+  await db.batch([
+    db.prepare("UPDATE portal_sessions SET last_seen_at = ? WHERE token_hash = ?").bind(now, tokenHash),
+    db.prepare("UPDATE app_users SET last_seen_at = ? WHERE user_id = ?").bind(now, row.user_id),
+  ]);
+
+  return {
+    identity: {
+      userId: row.user_id,
+      email: row.email,
+      displayName: row.display_name,
+      e2eUsername: null,
+    },
+    role,
+    translatorId: row.translator_id,
+  };
+}
+
+export async function loginPortalUser(
+  db: D1Database,
+  request: Request,
+  input: { mode: string; username?: string; accessCode?: string },
+) {
+  const mode = input.mode === "owner" ? "owner" : "translator";
+  const username = cleanText(input.username ?? "", 80).toLowerCase();
+  const accessCode = normalizeAccessCode(input.accessCode ?? "");
+  const attemptKey = await loginAttemptKey(request, mode, username);
+  await assertLoginAllowed(db, attemptKey);
+
+  try {
+    const user = mode === "owner"
+      ? await authenticateOwner(db, accessCode)
+      : await authenticateTranslator(db, username, accessCode);
+    await db.prepare("DELETE FROM login_attempts WHERE key_hash = ?").bind(attemptKey).run();
+    return createPortalSession(db, user);
+  } catch (error) {
+    await recordFailedLogin(db, attemptKey);
+    throw error;
+  }
+}
+
+export async function destroyPortalSession(db: D1Database, request: Request) {
+  const token = readCookie(request, SESSION_COOKIE_NAME);
+  if (!token) return;
+  await db.prepare("DELETE FROM portal_sessions WHERE token_hash = ?")
+    .bind(await hashValue(token)).run();
+}
+
+export function sessionCookie(token: string) {
+  return `${SESSION_COOKIE_NAME}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${SESSION_MAX_AGE_SECONDS}`;
+}
+
+export function expiredSessionCookie() {
+  return `${SESSION_COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0`;
+}
+
 export async function resolvePortalSession(db: D1Database, identity: PortalIdentity): Promise<PortalSession> {
   const now = new Date().toISOString();
   if (identity.e2eUsername) {
@@ -223,6 +335,187 @@ async function upsertAppUser(
        translator_id = excluded.translator_id,
        last_seen_at = excluded.last_seen_at`,
   ).bind(identity.userId, identity.email, identity.displayName, role, translatorId, now, now).run();
+}
+
+async function authenticateOwner(db: D1Database, accessCode: string): Promise<AppUserRow> {
+  const configuredCode = normalizeAccessCode(env.OWNER_ACCESS_CODE ?? "");
+  if (configuredCode.length < 12) throw new Error("لم يكتمل إعداد دخول المالك");
+  if (!await secretsEqual(accessCode, configuredCode)) {
+    throw new Error("بيانات الدخول غير صحيحة");
+  }
+
+  const now = new Date().toISOString();
+  const identity: PortalIdentity = {
+    userId: "portal:owner",
+    email: "owner@translator-portal.local",
+    displayName: "المالك",
+    e2eUsername: null,
+  };
+  await upsertAppUser(db, identity, "owner", null, now);
+  const user = await db.prepare("SELECT * FROM app_users WHERE user_id = ?")
+    .bind(identity.userId).first<AppUserRow>();
+  if (!user) throw new Error("تعذر تجهيز حساب المالك");
+  return user;
+}
+
+async function authenticateTranslator(
+  db: D1Database,
+  username: string,
+  accessCode: string,
+): Promise<AppUserRow> {
+  if (!username || !accessCode) throw new Error("بيانات الدخول غير صحيحة");
+  const translator = await db.prepare(
+    `SELECT t.id, t.username, t.name,
+      u.user_id, u.email, u.display_name, u.role, u.translator_id,
+      c.code_hash AS credential_hash,
+      i.code_hash AS invite_hash, i.used_at AS invite_used_at
+     FROM translators t
+     LEFT JOIN app_users u ON u.translator_id = t.id
+     LEFT JOIN translator_credentials c ON c.translator_id = t.id
+     LEFT JOIN invite_codes i ON i.translator_id = t.id
+     WHERE lower(t.username) = lower(?) AND t.active = 1`,
+  ).bind(username).first<{
+    id: number;
+    username: string;
+    name: string;
+    user_id: string | null;
+    email: string | null;
+    display_name: string | null;
+    role: string | null;
+    translator_id: number | null;
+    credential_hash: string | null;
+    invite_hash: string | null;
+    invite_used_at: string | null;
+  }>();
+
+  const submittedHash = await hashCode(accessCode);
+  const validCredential = translator?.credential_hash
+    ? await secretsEqual(submittedHash, translator.credential_hash, false)
+    : false;
+  const validInvite = !translator?.credential_hash && translator?.invite_hash && !translator.invite_used_at
+    ? await secretsEqual(submittedHash, translator.invite_hash, false)
+    : false;
+  if (!translator || (!validCredential && !validInvite)) {
+    throw new Error("بيانات الدخول غير صحيحة");
+  }
+
+  const now = new Date().toISOString();
+  const userId = translator.user_id ?? `portal:translator:${translator.id}`;
+  const setupStatements: D1PreparedStatement[] = [];
+  if (!translator.user_id) {
+    setupStatements.push(db.prepare(
+      `INSERT INTO app_users (user_id, email, display_name, role, translator_id, created_at, last_seen_at)
+       VALUES (?, ?, ?, 'translator', ?, ?, ?)`,
+    ).bind(
+      userId,
+      `${translator.username}@translator-portal.local`,
+      translator.name,
+      translator.id,
+      now,
+      now,
+    ));
+  }
+
+  if (validInvite) {
+    setupStatements.push(
+      db.prepare(
+        `INSERT INTO translator_credentials (translator_id, code_hash, updated_at)
+         VALUES (?, ?, ?)
+         ON CONFLICT(translator_id) DO UPDATE SET code_hash = excluded.code_hash, updated_at = excluded.updated_at`,
+      ).bind(translator.id, submittedHash, now),
+      db.prepare("UPDATE invite_codes SET used_at = ? WHERE translator_id = ?").bind(now, translator.id),
+    );
+  }
+  if (setupStatements.length) await db.batch(setupStatements);
+
+  if (validInvite) {
+    await writeAudit(db, userId, "claim_account", "translator", String(translator.id), translator.name);
+  }
+
+  const user = await db.prepare("SELECT * FROM app_users WHERE user_id = ?")
+    .bind(userId).first<AppUserRow>();
+  if (!user) throw new Error("تعذر تجهيز حساب المترجم");
+  return user;
+}
+
+async function createPortalSession(db: D1Database, user: AppUserRow) {
+  const nowDate = new Date();
+  const now = nowDate.toISOString();
+  const expiresAt = new Date(nowDate.getTime() + SESSION_MAX_AGE_SECONDS * 1000).toISOString();
+  const token = randomHex(32);
+  const tokenHash = await hashValue(token);
+  await db.batch([
+    db.prepare("DELETE FROM portal_sessions WHERE expires_at <= ?").bind(now),
+    db.prepare(
+      `INSERT INTO portal_sessions (token_hash, user_id, created_at, last_seen_at, expires_at)
+       VALUES (?, ?, ?, ?, ?)`,
+    ).bind(tokenHash, user.user_id, now, now, expiresAt),
+  ]);
+  return { token, expiresAt };
+}
+
+async function loginAttemptKey(request: Request, mode: string, username: string) {
+  const forwarded = request.headers.get("cf-connecting-ip")
+    ?? request.headers.get("x-forwarded-for")?.split(",")[0]
+    ?? "unknown";
+  return hashValue(`${forwarded.trim()}|${mode}|${username}`);
+}
+
+async function assertLoginAllowed(db: D1Database, keyHash: string) {
+  const row = await db.prepare("SELECT attempts, window_started_at FROM login_attempts WHERE key_hash = ?")
+    .bind(keyHash).first<{ attempts: number; window_started_at: string }>();
+  if (!row) return;
+  const windowAge = Date.now() - new Date(row.window_started_at).getTime();
+  if (windowAge < LOGIN_WINDOW_MS && Number(row.attempts) >= MAX_LOGIN_ATTEMPTS) {
+    throw new Error("محاولات دخول كثيرة. انتظر 15 دقيقة ثم حاول مجدداً");
+  }
+  if (windowAge >= LOGIN_WINDOW_MS) {
+    await db.prepare("DELETE FROM login_attempts WHERE key_hash = ?").bind(keyHash).run();
+  }
+}
+
+async function recordFailedLogin(db: D1Database, keyHash: string) {
+  const now = new Date().toISOString();
+  const cutoff = new Date(Date.now() - LOGIN_WINDOW_MS).toISOString();
+  await db.prepare(
+    `INSERT INTO login_attempts (key_hash, attempts, window_started_at, last_attempt_at)
+     VALUES (?, 1, ?, ?)
+     ON CONFLICT(key_hash) DO UPDATE SET
+       attempts = CASE WHEN login_attempts.window_started_at <= ? THEN 1 ELSE login_attempts.attempts + 1 END,
+       window_started_at = CASE WHEN login_attempts.window_started_at <= ? THEN excluded.window_started_at ELSE login_attempts.window_started_at END,
+       last_attempt_at = excluded.last_attempt_at`,
+  ).bind(keyHash, now, now, cutoff, cutoff).run();
+}
+
+function readCookie(request: Request, name: string) {
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  for (const entry of cookieHeader.split(";")) {
+    const separator = entry.indexOf("=");
+    if (separator < 0) continue;
+    if (entry.slice(0, separator).trim() === name) return entry.slice(separator + 1).trim();
+  }
+  return null;
+}
+
+function normalizeAccessCode(value: string) {
+  return String(value).trim().toUpperCase();
+}
+
+async function secretsEqual(left: string, right: string, hashInputs = true) {
+  const [leftDigest, rightDigest] = hashInputs
+    ? await Promise.all([hashValue(left), hashValue(right)])
+    : [left, right];
+  if (leftDigest.length !== rightDigest.length) return false;
+  let difference = 0;
+  for (let index = 0; index < leftDigest.length; index += 1) {
+    difference |= leftDigest.charCodeAt(index) ^ rightDigest.charCodeAt(index);
+  }
+  return difference === 0;
+}
+
+function randomHex(length: number) {
+  const bytes = crypto.getRandomValues(new Uint8Array(length));
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 export function currentCycle() {
@@ -319,13 +612,21 @@ export async function claimTranslatorAccount(
   if (!translator || translator.linked || !translator.code_hash || translator.used_at) {
     throw new Error("اسم المستخدم أو رمز الدعوة غير صحيح");
   }
-  if (await hashCode(code) !== translator.code_hash) throw new Error("اسم المستخدم أو رمز الدعوة غير صحيح");
+  const submittedHash = await hashCode(code);
+  if (!await secretsEqual(submittedHash, translator.code_hash, false)) {
+    throw new Error("اسم المستخدم أو رمز الدعوة غير صحيح");
+  }
   const now = new Date().toISOString();
   await db.batch([
     db.prepare(
       `INSERT INTO app_users (user_id, email, display_name, role, translator_id, created_at, last_seen_at)
        VALUES (?, ?, ?, 'translator', ?, ?, ?)`,
     ).bind(session.identity.userId, session.identity.email, translator.name, translator.id, now, now),
+    db.prepare(
+      `INSERT INTO translator_credentials (translator_id, code_hash, updated_at)
+       VALUES (?, ?, ?)
+       ON CONFLICT(translator_id) DO UPDATE SET code_hash = excluded.code_hash, updated_at = excluded.updated_at`,
+    ).bind(translator.id, submittedHash, now),
     db.prepare("UPDATE invite_codes SET used_at = ? WHERE translator_id = ?").bind(now, translator.id),
   ]);
   await writeAudit(db, session.identity.userId, "claim_account", "translator", String(translator.id), translator.name);
@@ -335,21 +636,27 @@ export async function generateInviteCode(db: D1Database, session: PortalSession,
   requireOwner(session);
   if (!Number.isInteger(translatorId) || translatorId < 1) throw new Error("حساب المترجم غير صحيح");
   const translator = await db.prepare(
-    `SELECT t.id, CASE WHEN u.user_id IS NULL THEN 0 ELSE 1 END AS linked
+    `SELECT t.id, u.user_id
      FROM translators t LEFT JOIN app_users u ON u.translator_id = t.id
      WHERE t.id = ? AND t.active = 1`,
-  ).bind(translatorId).first<{ id: number; linked: number }>();
+  ).bind(translatorId).first<{ id: number; user_id: string | null }>();
   if (!translator) throw new Error("حساب المترجم غير موجود");
-  if (translator.linked) throw new Error("هذا الحساب مربوط بالفعل");
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const bytes = crypto.getRandomValues(new Uint8Array(8));
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
   const code = Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
   const now = new Date().toISOString();
-  await db.prepare(
-    `INSERT INTO invite_codes (translator_id, code_hash, created_at, used_at)
-     VALUES (?, ?, ?, NULL)
-     ON CONFLICT(translator_id) DO UPDATE SET code_hash = excluded.code_hash, created_at = excluded.created_at, used_at = NULL`,
-  ).bind(translatorId, await hashCode(code), now).run();
+  const statements = [
+    db.prepare(
+      `INSERT INTO invite_codes (translator_id, code_hash, created_at, used_at)
+       VALUES (?, ?, ?, NULL)
+       ON CONFLICT(translator_id) DO UPDATE SET code_hash = excluded.code_hash, created_at = excluded.created_at, used_at = NULL`,
+    ).bind(translatorId, await hashCode(code), now),
+    db.prepare("DELETE FROM translator_credentials WHERE translator_id = ?").bind(translatorId),
+  ];
+  if (translator.user_id) {
+    statements.push(db.prepare("DELETE FROM portal_sessions WHERE user_id = ?").bind(translator.user_id));
+  }
+  await db.batch(statements);
   await writeAudit(db, session.identity.userId, "generate_invite", "translator", String(translatorId), "تم إنشاء رمز دعوة جديد");
   return code;
 }
@@ -525,12 +832,15 @@ export async function setRewardStatus(
 export async function resetE2eState(db: D1Database, session: PortalSession) {
   if (session.identity.e2eUsername !== "owner") throw new Error("غير مسموح");
   await db.batch([
+    db.prepare("DELETE FROM portal_sessions"),
+    db.prepare("DELETE FROM login_attempts"),
     db.prepare("DELETE FROM audit_log"),
     db.prepare("DELETE FROM rewards"),
     db.prepare("DELETE FROM daily_stats"),
     db.prepare("DELETE FROM attendance"),
     db.prepare("DELETE FROM requests"),
     db.prepare("DELETE FROM preferences"),
+    db.prepare("DELETE FROM translator_credentials"),
     db.prepare("DELETE FROM invite_codes"),
     db.prepare("DELETE FROM app_users"),
   ]);
@@ -563,7 +873,11 @@ async function writeAudit(
 }
 
 async function hashCode(code: string) {
-  const bytes = new TextEncoder().encode(code.trim().toUpperCase());
+  return hashValue(normalizeAccessCode(code));
+}
+
+async function hashValue(value: string) {
+  const bytes = new TextEncoder().encode(value);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }

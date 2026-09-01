@@ -28,6 +28,30 @@ export const appUsers = sqliteTable("app_users", {
   index("idx_app_users_role").on(table.role),
 ]);
 
+export const portalSessions = sqliteTable("portal_sessions", {
+  tokenHash: text("token_hash").primaryKey(),
+  userId: text("user_id").notNull().references(() => appUsers.userId),
+  createdAt: text("created_at").notNull(),
+  lastSeenAt: text("last_seen_at").notNull(),
+  expiresAt: text("expires_at").notNull(),
+}, (table) => [
+  index("idx_portal_sessions_user").on(table.userId),
+  index("idx_portal_sessions_expiry").on(table.expiresAt),
+]);
+
+export const translatorCredentials = sqliteTable("translator_credentials", {
+  translatorId: integer("translator_id").primaryKey().references(() => translators.id),
+  codeHash: text("code_hash").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const loginAttempts = sqliteTable("login_attempts", {
+  keyHash: text("key_hash").primaryKey(),
+  attempts: integer("attempts").notNull().default(0),
+  windowStartedAt: text("window_started_at").notNull(),
+  lastAttemptAt: text("last_attempt_at").notNull(),
+});
+
 export const inviteCodes = sqliteTable("invite_codes", {
   translatorId: integer("translator_id").primaryKey().references(() => translators.id),
   codeHash: text("code_hash").notNull(),

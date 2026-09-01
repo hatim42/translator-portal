@@ -8,11 +8,10 @@ import {
   getOwnerPortal,
   getPortalDb,
   getTranslatorPortal,
-  identityFromRequest,
   recordAttendance,
   recordDailyStat,
   resetE2eState,
-  resolvePortalSession,
+  resolveRequestSession,
   saveDistribution,
   savePreference,
   setRewardStatus,
@@ -22,11 +21,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
-    const identity = identityFromRequest(request);
-    if (!identity) return NextResponse.json({ authenticated: false });
     const db = getPortalDb();
     await ensurePortalDb(db);
-    const session = await resolvePortalSession(db, identity);
+    const session = await resolveRequestSession(db, request);
+    if (!session) return NextResponse.json({ authenticated: false });
     return NextResponse.json(await payloadForSession(db, session));
   } catch (error) {
     return failure(error);
@@ -36,11 +34,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
-    const identity = identityFromRequest(request);
-    if (!identity) return NextResponse.json({ error: "يلزم تسجيل الدخول أولاً" }, { status: 401 });
     const db = getPortalDb();
     await ensurePortalDb(db);
-    let session = await resolvePortalSession(db, identity);
+    let session = await resolveRequestSession(db, request);
+    if (!session) return NextResponse.json({ error: "يلزم تسجيل الدخول أولاً" }, { status: 401 });
     const body = await request.json() as Record<string, unknown>;
     const action = String(body.action ?? "");
     let result: Record<string, unknown> = {};
@@ -48,7 +45,8 @@ export async function POST(request: Request) {
     switch (action) {
       case "claim-account":
         await claimTranslatorAccount(db, session, String(body.username ?? ""), String(body.code ?? ""));
-        session = await resolvePortalSession(db, identity);
+        session = await resolveRequestSession(db, request);
+        if (!session) throw new Error("تعذر تحديث جلسة الحساب");
         break;
       case "generate-invite":
         result = { inviteCode: await generateInviteCode(db, session, Number(body.translatorId)) };
@@ -112,7 +110,8 @@ export async function POST(request: Request) {
         break;
       case "e2e-reset":
         await resetE2eState(db, session);
-        session = await resolvePortalSession(db, identity);
+        session = await resolveRequestSession(db, request);
+        if (!session) throw new Error("تعذر تحديث جلسة الاختبار");
         break;
       default:
         return NextResponse.json({ error: "العملية المطلوبة غير معروفة" }, { status: 400 });
@@ -124,7 +123,7 @@ export async function POST(request: Request) {
   }
 }
 
-async function payloadForSession(db: D1Database, session: Awaited<ReturnType<typeof resolvePortalSession>>) {
+async function payloadForSession(db: D1Database, session: NonNullable<Awaited<ReturnType<typeof resolveRequestSession>>>) {
   if (session.role === "owner") return getOwnerPortal(db, session);
   if (session.role === "translator") return getTranslatorPortal(db, session);
   return {

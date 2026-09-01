@@ -129,6 +129,7 @@ type PortalData = OwnerData | TranslatorData | PendingData | AnonymousData;
 
 type ActionPayload = Record<string, unknown> & { action: string };
 type RunAction = (payload: ActionPayload, message?: string) => Promise<PortalData | null>;
+type LoginPayload = { mode: "owner" | "translator"; username?: string; accessCode: string };
 
 const shifts = [
   "الوردية الأولى · 5 م - 11 م",
@@ -137,7 +138,7 @@ const shifts = [
 ];
 const restDays = ["الجمعة", "السبت", "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس"];
 
-export default function PortalClient({ signInPath, signOutPath }: { signInPath: string; signOutPath: string }) {
+export default function PortalClient() {
   const [data, setData] = useState<PortalData | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -191,6 +192,41 @@ export default function PortalClient({ signInPath, signOutPath }: { signInPath: 
     }
   }
 
+  async function signIn(payload: LoginPayload) {
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const body = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(body.error || "تعذر تسجيل الدخول");
+      await loadPortal();
+      return true;
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "تعذر تسجيل الدخول");
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function signOut() {
+    setBusy(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (!response.ok) throw new Error("تعذر تسجيل الخروج");
+      setData({ authenticated: false });
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "تعذر تسجيل الخروج");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function installApp() {
     if (!installEvent) {
       setInstallHelp(true);
@@ -202,8 +238,8 @@ export default function PortalClient({ signInPath, signOutPath }: { signInPath: 
   }
 
   if (!data) return <LoadingScreen error={error} retry={loadPortal} />;
-  if (!data.authenticated) return <SignInScreen signInPath={signInPath} />;
-  if (data.role === "pending") return <ClaimScreen data={data} busy={busy} runAction={runAction} signOutPath={signOutPath} />;
+  if (!data.authenticated) return <SignInScreen busy={busy} error={error} signIn={signIn} />;
+  if (data.role === "pending") return <ClaimScreen data={data} busy={busy} runAction={runAction} onSignOut={signOut} />;
 
   return (
     <>
@@ -212,7 +248,7 @@ export default function PortalClient({ signInPath, signOutPath }: { signInPath: 
           data={data}
           busy={busy}
           runAction={runAction}
-          signOutPath={signOutPath}
+          onSignOut={signOut}
           installApp={installApp}
         />
       ) : (
@@ -220,7 +256,7 @@ export default function PortalClient({ signInPath, signOutPath }: { signInPath: 
           data={data}
           busy={busy}
           runAction={runAction}
-          signOutPath={signOutPath}
+          onSignOut={signOut}
           installApp={installApp}
         />
       )}
@@ -244,26 +280,45 @@ function LoadingScreen({ error, retry }: { error: string | null; retry: () => Pr
   );
 }
 
-function SignInScreen({ signInPath }: { signInPath: string }) {
+function SignInScreen({ busy, error, signIn }: { busy: boolean; error: string | null; signIn: (payload: LoginPayload) => Promise<boolean> }) {
+  const [mode, setMode] = useState<"owner" | "translator">("translator");
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    await signIn({
+      mode,
+      username: mode === "translator" ? String(form.get("username") ?? "") : undefined,
+      accessCode: String(form.get("accessCode") ?? ""),
+    });
+  }
+
   return (
     <main className="auth-page">
       <section className="auth-brand">
         <Image src="/religious-affairs-logo.jpg" alt="رئاسة الشؤون الدينية بالمسجد الحرام والمسجد النبوي" width={1536} height={906} priority />
         <div><span>وكالة الشؤون الدعوية والإرشادية</span><h1>منصة إدارة المترجمين</h1><p>الورديات والطلبات والإحصاءات والمتابعة في مساحة عمل موحدة.</p></div>
       </section>
-      <section className="auth-panel">
+      <form className="auth-panel" onSubmit={(event) => void submit(event)}>
         <div className="security-mark"><ShieldCheck size={26} /></div>
         <p className="eyebrow">دخول آمن</p>
         <h2>مرحباً بك</h2>
-        <p>استخدم حسابك الموثوق للوصول إلى لوحة المالك أو مساحة المترجم.</p>
-        <a className="btn primary wide" href={signInPath}><UserRoundCheck size={18} />تسجيل الدخول</a>
-        <small>لا تُخزّن كلمات مرور داخل الموقع أو GitHub.</small>
-      </section>
+        <p>اختر نوع الحساب ثم أدخل بيانات الوصول الخاصة بك.</p>
+        <div className="segmented auth-modes" aria-label="نوع الحساب">
+          <button type="button" className={mode === "translator" ? "active" : ""} aria-pressed={mode === "translator"} onClick={() => setMode("translator")}><Languages size={16} />مترجم</button>
+          <button type="button" className={mode === "owner" ? "active" : ""} aria-pressed={mode === "owner"} onClick={() => setMode("owner")}><ShieldCheck size={16} />المالك</button>
+        </div>
+        {mode === "translator" && <label>اسم المستخدم<input name="username" autoComplete="username" required data-testid="login-username" /></label>}
+        <label>{mode === "owner" ? "رمز دخول المالك" : "رمز الدخول"}<input name="accessCode" type="password" autoComplete="current-password" dir="ltr" required data-testid="login-code" /></label>
+        {error && <div className="auth-error" role="alert"><XCircle size={17} /><span>{error}</span></div>}
+        <button className="btn primary wide" disabled={busy} data-testid="login-submit"><UserRoundCheck size={18} />{busy ? "جاري التحقق..." : "دخول المنصة"}</button>
+        <small>{mode === "translator" ? "رمز الدخول الأول يصدره المالك ويُحفظ لديك للدخول لاحقاً." : "رمز المالك محفوظ بصورة مشفرة في بيئة الاستضافة."}</small>
+      </form>
     </main>
   );
 }
 
-function ClaimScreen({ data, busy, runAction, signOutPath }: { data: PendingData; busy: boolean; runAction: RunAction; signOutPath: string }) {
+function ClaimScreen({ data, busy, runAction, onSignOut }: { data: PendingData; busy: boolean; runAction: RunAction; onSignOut: () => Promise<void> }) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -283,7 +338,7 @@ function ClaimScreen({ data, busy, runAction, signOutPath }: { data: PendingData
         <label>اسم المستخدم<input name="username" autoComplete="username" required /></label>
         <label>رمز الدعوة<input name="code" autoComplete="one-time-code" dir="ltr" required /></label>
         <button className="btn primary wide" disabled={busy}><CheckCircle2 size={18} />ربط الحساب</button>
-        <a className="text-link" href={signOutPath}>الدخول بحساب مختلف</a>
+        <button className="text-link plain-button" type="button" onClick={() => void onSignOut()}>الدخول بحساب مختلف</button>
       </form>
     </main>
   );
@@ -296,7 +351,7 @@ function AppFrame({
   active,
   setActive,
   nav,
-  signOutPath,
+  onSignOut,
   installApp,
   children,
 }: {
@@ -306,7 +361,7 @@ function AppFrame({
   active: string;
   setActive: (value: string) => void;
   nav: Array<{ id: string; label: string; icon: typeof LayoutDashboard }>;
-  signOutPath: string;
+  onSignOut: () => Promise<void>;
   installApp: () => Promise<void>;
   children: React.ReactNode;
 }) {
@@ -318,7 +373,7 @@ function AppFrame({
         <div className="header-brand"><Image src="/religious-affairs-logo.jpg" alt="رئاسة الشؤون الدينية" width={1536} height={906} /><div><strong>منصة المترجمين</strong><small>وكالة الشؤون الدعوية والإرشادية</small></div></div>
         <div className="header-actions">
           <button className="icon-btn" aria-label="تثبيت التطبيق" title="تثبيت التطبيق" onClick={() => void installApp()}><Download /></button>
-          <a className="icon-btn" aria-label="تسجيل الخروج" title="تسجيل الخروج" href={signOutPath}><LogOut /></a>
+          <button className="icon-btn" aria-label="تسجيل الخروج" title="تسجيل الخروج" onClick={() => void onSignOut()}><LogOut /></button>
           <div className="user-chip"><span>{initials(name)}</span><div><strong data-testid="user-name">{name}</strong><small>{subtitle}</small></div></div>
         </div>
       </header>
@@ -334,7 +389,7 @@ function AppFrame({
   );
 }
 
-function OwnerPortal({ data, busy, runAction, signOutPath, installApp }: { data: OwnerData; busy: boolean; runAction: RunAction; signOutPath: string; installApp: () => Promise<void> }) {
+function OwnerPortal({ data, busy, runAction, onSignOut, installApp }: { data: OwnerData; busy: boolean; runAction: RunAction; onSignOut: () => Promise<void>; installApp: () => Promise<void> }) {
   const [active, setActive] = useState("overview");
   const [invite, setInvite] = useState<{ name: string; code: string } | null>(null);
   const nav = [
@@ -346,13 +401,14 @@ function OwnerPortal({ data, busy, runAction, signOutPath, installApp }: { data:
   ];
 
   async function generateInvite(person: Person) {
+    if (person.linked && !window.confirm(`سيتم تسجيل خروج ${person.name} وإلغاء رمزه السابق. هل تريد المتابعة؟`)) return;
     const body = await runAction({ action: "generate-invite", translatorId: person.id });
     const code = body?.role === "owner" ? body.inviteCode : undefined;
     if (code) setInvite({ name: person.name, code });
   }
 
   return (
-    <AppFrame role="owner" name={data.user.displayName} subtitle="المالك" active={active} setActive={setActive} nav={nav} signOutPath={signOutPath} installApp={installApp}>
+    <AppFrame role="owner" name={data.user.displayName} subtitle="المالك" active={active} setActive={setActive} nav={nav} onSignOut={onSignOut} installApp={installApp}>
       {active === "overview" && <OwnerOverview data={data} setActive={setActive} runAction={runAction} busy={busy} />}
       {active === "requests" && <OwnerRequests requests={data.requests} runAction={runAction} busy={busy} />}
       {active === "distribution" && <Distribution people={data.people} runAction={runAction} busy={busy} />}
@@ -440,7 +496,7 @@ function People({ people, runAction, generateInvite, busy }: { people: Person[];
     <>
       <PageHeading eyebrow="الحسابات والفريق" title="دليل المترجمين" description="إدارة الربط الآمن وحالة المكافأة دون كلمات مرور محفوظة في المصدر." actions={<span className="count-chip">{rows.length} مترجماً</span>} />
       <section className="toolbar"><div className="search-field"><Search /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="الاسم، المستخدم، اللغة..." /></div><div className="segmented"><button className={group === "all" ? "active" : ""} onClick={() => setGroup("all")}>الكل</button><button className={group === "أساسي" ? "active" : ""} onClick={() => setGroup("أساسي")}>أساسي</button><button className={group === "مساند" ? "active" : ""} onClick={() => setGroup("مساند")}>مساند</button></div></section>
-      <section className="people-grid">{rows.map((person) => <article className="person-card" key={person.id}><div className="person-card-top"><span className="avatar">{initials(person.name)}</span><div><h3>{person.name}</h3><p>@{person.username}</p></div><StatusPill status={person.linked ? "linked" : "unlinked"} /></div><dl><div><dt>اللغة</dt><dd>{person.primary_language}</dd></div><div><dt>المجموعة</dt><dd>{person.group_name}</dd></div><div><dt>الوردية</dt><dd>{shortShift(person.shift)}</dd></div><div><dt>الراحة</dt><dd>{person.rest_day}</dd></div></dl><div className="person-card-actions">{!person.linked && <button className="btn outline" disabled={busy} onClick={() => void generateInvite(person)}><KeyRound />إنشاء رمز</button>}<select aria-label={`حالة مكافأة ${person.name}`} value={person.reward_status} onChange={(event) => void runAction({ action: "set-reward", translatorId: person.id, status: event.target.value }, "تم تحديث حالة المكافأة")}><option value="pending">المكافأة: قيد المراجعة</option><option value="paid">المكافأة: تم الصرف</option><option value="on_hold">المكافأة: معلقة</option></select></div></article>)}</section>
+      <section className="people-grid">{rows.map((person) => <article className="person-card" key={person.id}><div className="person-card-top"><span className="avatar">{initials(person.name)}</span><div><h3>{person.name}</h3><p>@{person.username}</p></div><StatusPill status={person.linked ? "linked" : "unlinked"} /></div><dl><div><dt>اللغة</dt><dd>{person.primary_language}</dd></div><div><dt>المجموعة</dt><dd>{person.group_name}</dd></div><div><dt>الوردية</dt><dd>{shortShift(person.shift)}</dd></div><div><dt>الراحة</dt><dd>{person.rest_day}</dd></div></dl><div className="person-card-actions"><button className="btn outline" disabled={busy} onClick={() => void generateInvite(person)}><KeyRound />{person.linked ? "إعادة إصدار الرمز" : "إنشاء رمز"}</button><select aria-label={`حالة مكافأة ${person.name}`} value={person.reward_status} onChange={(event) => void runAction({ action: "set-reward", translatorId: person.id, status: event.target.value }, "تم تحديث حالة المكافأة")}><option value="pending">المكافأة: قيد المراجعة</option><option value="paid">المكافأة: تم الصرف</option><option value="on_hold">المكافأة: معلقة</option></select></div></article>)}</section>
     </>
   );
 }
@@ -454,7 +510,7 @@ function AuditLog({ rows }: { rows: OwnerData["audit"] }) {
   );
 }
 
-function TranslatorPortal({ data, busy, runAction, signOutPath, installApp }: { data: TranslatorData; busy: boolean; runAction: RunAction; signOutPath: string; installApp: () => Promise<void> }) {
+function TranslatorPortal({ data, busy, runAction, onSignOut, installApp }: { data: TranslatorData; busy: boolean; runAction: RunAction; onSignOut: () => Promise<void>; installApp: () => Promise<void> }) {
   const [active, setActive] = useState("today");
   const nav = [
     { id: "today", label: "اليوم", icon: LayoutDashboard },
@@ -463,7 +519,7 @@ function TranslatorPortal({ data, busy, runAction, signOutPath, installApp }: { 
     { id: "records", label: "التسجيل", icon: BarChart3 },
   ];
   return (
-    <AppFrame role="translator" name={data.person.name} subtitle={`${data.person.primary_language} · ${data.person.group_name}`} active={active} setActive={setActive} nav={nav} signOutPath={signOutPath} installApp={installApp}>
+    <AppFrame role="translator" name={data.person.name} subtitle={`${data.person.primary_language} · ${data.person.group_name}`} active={active} setActive={setActive} nav={nav} onSignOut={onSignOut} installApp={installApp}>
       {active === "today" && <TranslatorToday data={data} setActive={setActive} runAction={runAction} busy={busy} />}
       {active === "preference" && <PreferenceForm data={data} runAction={runAction} busy={busy} />}
       {active === "requests" && <TranslatorRequests data={data} runAction={runAction} busy={busy} />}
@@ -578,7 +634,7 @@ function InviteModal({ invite, close }: { invite: { name: string; code: string }
     await navigator.clipboard.writeText(invite.code);
     setCopied(true);
   }
-  return <div className="modal" role="dialog" aria-modal="true" aria-labelledby="invite-title"><button className="modal-backdrop" aria-label="إغلاق" onClick={close} /><section className="modal-card"><div className="modal-icon"><KeyRound /></div><button className="icon-btn modal-close" aria-label="إغلاق" onClick={close}><X /></button><p className="eyebrow">يظهر مرة واحدة</p><h2 id="invite-title">رمز دعوة {invite.name}</h2><p>أرسل الرمز للمترجم عبر قناة آمنة. إنشاء رمز جديد يلغي السابق.</p><div className="invite-code" dir="ltr">{invite.code}</div><button className="btn primary wide" onClick={() => void copyCode()}>{copied ? <Check /> : <Copy />}{copied ? "تم النسخ" : "نسخ الرمز"}</button></section></div>;
+  return <div className="modal" role="dialog" aria-modal="true" aria-labelledby="invite-title"><button className="modal-backdrop" aria-label="إغلاق" onClick={close} /><section className="modal-card"><div className="modal-icon"><KeyRound /></div><button className="icon-btn modal-close" aria-label="إغلاق" onClick={close}><X /></button><p className="eyebrow">يظهر مرة واحدة</p><h2 id="invite-title">رمز دخول {invite.name}</h2><p>أرسل الرمز للمترجم عبر قناة آمنة. سيستخدمه للدخول، وإصدار رمز جديد يلغي السابق.</p><div className="invite-code" dir="ltr" data-testid="invite-code">{invite.code}</div><button className="btn primary wide" onClick={() => void copyCode()}>{copied ? <Check /> : <Copy />}{copied ? "تم النسخ" : "نسخ الرمز"}</button></section></div>;
 }
 
 function InstallHelp({ close }: { close: () => void }) {

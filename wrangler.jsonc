@@ -1,0 +1,8 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "translator-portal",
+  "compatibility_date": "2026-08-31",
+  "observability": {
+    "enabled": true
+  }
+}

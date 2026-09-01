@@ -4,24 +4,29 @@ import vinext from 'vinext';
 import { defineConfig } from 'vite';
 import hostingConfig from './.openai/hosting.json';
 
-const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
-  '00000000-0000-4000-8000-000000000000';
+const D1_DATABASE_NAME = 'translator-portal-db';
+const D1_DATABASE_ID = '3e4b827c-0a36-432d-9329-d539aecd1593';
 
 const { d1, r2 } = hostingConfig;
 
 // macOS Seatbelt blocks FSEvents, so Codex previews need polling for HMR.
 const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === 'seatbelt';
+const localOwnerAccessCode = process.env.OWNER_ACCESS_CODE;
 
 const localBindingConfig = {
   main: 'vinext/server/app-router-entry',
   compatibility_date: '2026-08-31',
   compatibility_flags: ['nodejs_compat'],
+  vars: localOwnerAccessCode
+    ? { OWNER_ACCESS_CODE: localOwnerAccessCode }
+    : {},
   d1_databases: d1
     ? [
         {
           binding: d1,
-          database_name: 'site-creator-d1',
-          database_id: SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
+          database_name: D1_DATABASE_NAME,
+          database_id: D1_DATABASE_ID,
+          migrations_dir: 'drizzle',
         },
       ]
     : [],
