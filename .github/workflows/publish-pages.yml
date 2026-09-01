@@ -1,0 +1,50 @@
+name: Publish forms portal
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: forms-pages-production
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run test:live
+      - name: Prepare isolated Pages branch
+        shell: bash
+        run: |
+          git fetch origin gh-pages
+          git branch --force gh-pages origin/gh-pages
+          git worktree add .pages gh-pages
+          git -C .pages rm -r --ignore-unmatch .
+          cp index.html .pages/index.html
+          cp -R assets .pages/assets
+          cp -R forms .pages/forms
+          touch .pages/.nojekyll
+      - name: Publish approved portal files
+        shell: bash
+        run: |
+          git -C .pages config user.name "github-actions[bot]"
+          git -C .pages config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C .pages add .nojekyll index.html assets forms
+          if git -C .pages diff --cached --quiet; then
+            echo "No Pages changes to publish."
+            exit 0
+          fi
+          git -C .pages commit -m "Publish approved forms portal"
+          git -C .pages push origin gh-pages
