@@ -146,6 +146,6 @@ function assertSameOrigin(request: Request) {
 
 function failure(error: unknown) {
   const message = error instanceof Error ? error.message : "حدث خطأ غير متوقع";
-  const status = /غير مسموح|للمالك فقط|للمترجم فقط/.test(message) ? 403 : 400;
+  const status = /غير مسموح|للمشرف فقط|للمترجم فقط/.test(message) ? 403 : 400;
   return NextResponse.json({ error: message }, { status });
 }

@@ -306,13 +306,13 @@ function SignInScreen({ busy, error, signIn }: { busy: boolean; error: string | 
         <p>اختر نوع الحساب ثم أدخل بيانات الوصول الخاصة بك.</p>
         <div className="segmented auth-modes" aria-label="نوع الحساب">
           <button type="button" className={mode === "translator" ? "active" : ""} aria-pressed={mode === "translator"} onClick={() => setMode("translator")}><Languages size={16} />مترجم</button>
-          <button type="button" className={mode === "owner" ? "active" : ""} aria-pressed={mode === "owner"} onClick={() => setMode("owner")}><ShieldCheck size={16} />المالك</button>
+          <button type="button" className={mode === "owner" ? "active" : ""} aria-pressed={mode === "owner"} onClick={() => setMode("owner")}><ShieldCheck size={16} />المشرف</button>
         </div>
         {mode === "translator" && <label>اسم المستخدم<input name="username" autoComplete="username" required data-testid="login-username" /></label>}
-        <label>{mode === "owner" ? "رمز دخول المالك" : "رمز الدخول"}<input name="accessCode" type="password" autoComplete="current-password" dir="ltr" required data-testid="login-code" /></label>
+        <label>{mode === "owner" ? "رمز دخول المشرف" : "رمز الدخول"}<input name="accessCode" type="password" autoComplete="current-password" dir="ltr" required data-testid="login-code" /></label>
         {error && <div className="auth-error" role="alert"><XCircle size={17} /><span>{error}</span></div>}
         <button className="btn primary wide" disabled={busy} data-testid="login-submit"><UserRoundCheck size={18} />{busy ? "جاري التحقق..." : "دخول المنصة"}</button>
-        <small>{mode === "translator" ? "رمز الدخول الأول يصدره المالك ويُحفظ لديك للدخول لاحقاً." : "رمز المالك محفوظ بصورة مشفرة في بيئة الاستضافة."}</small>
+        <small>{mode === "translator" ? "رمز الدخول الأول يصدره المشرف ويُحفظ لديك للدخول لاحقاً." : "رمز المشرف محفوظ بصورة مشفرة في بيئة الاستضافة."}</small>
       </form>
     </main>
   );
@@ -334,7 +334,7 @@ function ClaimScreen({ data, busy, runAction, onSignOut }: { data: PendingData; 
         <div className="security-mark"><KeyRound size={25} /></div>
         <p className="eyebrow">مرحباً {data.user.displayName}</p>
         <h2>رمز الدعوة</h2>
-        <p>أدخل اسم المستخدم والرمز الذي أصدره لك المالك.</p>
+        <p>أدخل اسم المستخدم والرمز الذي أصدره لك المشرف.</p>
         <label>اسم المستخدم<input name="username" autoComplete="username" required /></label>
         <label>رمز الدعوة<input name="code" autoComplete="one-time-code" dir="ltr" required /></label>
         <button className="btn primary wide" disabled={busy}><CheckCircle2 size={18} />ربط الحساب</button>
@@ -378,7 +378,7 @@ function AppFrame({
         </div>
       </header>
       <aside className={`sidebar ${menuOpen ? "open" : ""}`}>
-        <div className="sidebar-role"><ShieldCheck size={18} /><span>{role === "owner" ? "لوحة المالك" : "مساحة المترجم"}</span></div>
+        <div className="sidebar-role"><ShieldCheck size={18} /><span>{role === "owner" ? "لوحة المشرف" : "مساحة المترجم"}</span></div>
         <nav>{nav.map((item) => <button key={item.id} className={active === item.id ? "active" : ""} onClick={() => { setActive(item.id); setMenuOpen(false); }}><item.icon /><span>{item.label}</span></button>)}</nav>
         <button className="install-link" onClick={() => void installApp()}><Smartphone /><span>تثبيت كتطبيق</span></button>
       </aside>
@@ -408,7 +408,7 @@ function OwnerPortal({ data, busy, runAction, onSignOut, installApp }: { data: O
   }
 
   return (
-    <AppFrame role="owner" name={data.user.displayName} subtitle="المالك" active={active} setActive={setActive} nav={nav} onSignOut={onSignOut} installApp={installApp}>
+    <AppFrame role="owner" name={data.user.displayName} subtitle="المشرف" active={active} setActive={setActive} nav={nav} onSignOut={onSignOut} installApp={installApp}>
       {active === "overview" && <OwnerOverview data={data} setActive={setActive} runAction={runAction} busy={busy} />}
       {active === "requests" && <OwnerRequests requests={data.requests} runAction={runAction} busy={busy} />}
       {active === "distribution" && <Distribution people={data.people} runAction={runAction} busy={busy} />}
@@ -556,9 +556,9 @@ function PreferenceForm({ data, runAction, busy }: { data: TranslatorData; runAc
     <>
       <PageHeading eyebrow={`دورة ${formatCycle(data.cycle)}`} title="رغبة الوردية والراحة" description="سجل اختيارك قبل إعداد التوزيع. يمكنك تحديثه ما دام الشهر مفتوحاً." />
       <form className="form-panel" onSubmit={(event) => void submit(event)} data-testid="preference-form">
-        <div className="form-intro"><CalendarDays /><div><h2>اختيارات الشهر</h2><p>الرغبة لا تغيّر التوزيع مباشرة؛ تظهر للمالك أثناء الاعتماد.</p></div></div>
+        <div className="form-intro"><CalendarDays /><div><h2>اختيارات الشهر</h2><p>الرغبة لا تغيّر التوزيع مباشرة؛ تظهر للمشرف أثناء الاعتماد.</p></div></div>
         <div className="form-grid"><label>الوردية المفضلة<select name="preferredShift" defaultValue={data.preference?.preferred_shift ?? data.person.shift} data-testid="preferred-shift">{shifts.map((shift) => <option key={shift}>{shift}</option>)}</select></label><label>يوم الراحة المفضل<select name="preferredRest" defaultValue={data.preference?.preferred_rest ?? data.person.rest_day} data-testid="preferred-rest">{restDays.map((day) => <option key={day}>{day}</option>)}</select></label></div>
-        <label>ملاحظة للمالك<textarea name="note" defaultValue={data.preference?.note ?? ""} placeholder="اختياري: اذكر ظرفاً يؤثر على التوزيع" /></label>
+        <label>ملاحظة للمشرف<textarea name="note" defaultValue={data.preference?.note ?? ""} placeholder="اختياري: اذكر ظرفاً يؤثر على التوزيع" /></label>
         <div className="form-actions"><button className="btn primary" disabled={busy} data-testid="save-preference"><Send />حفظ الرغبة</button>{data.preference && <span className="saved-note"><CheckCircle2 />آخر تحديث: {formatDateTime(data.preference.submitted_at)}</span>}</div>
       </form>
     </>
@@ -571,7 +571,7 @@ function TranslatorRequests({ data, runAction, busy }: { data: TranslatorData; r
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const result = await runAction({ action: "create-request", type, startDate: form.get("startDate"), endDate: form.get("endDate"), requestedValue: form.get("requestedValue"), reason: form.get("reason") }, "تم إرسال الطلب للمالك");
+    const result = await runAction({ action: "create-request", type, startDate: form.get("startDate"), endDate: form.get("endDate"), requestedValue: form.get("requestedValue"), reason: form.get("reason") }, "تم إرسال الطلب للمشرف");
     if (result) setShowForm(false);
   }
   return (

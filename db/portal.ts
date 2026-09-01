@@ -184,7 +184,7 @@ export function identityFromRequest(request: Request): PortalIdentity | null {
     return {
       userId: `e2e:${e2eUsername}`,
       email: `${e2eUsername}@e2e.local`,
-      displayName: e2eUsername === "owner" ? "المالك" : e2eUsername,
+      displayName: e2eUsername === "owner" ? "المشرف" : e2eUsername,
       e2eUsername,
     };
   }
@@ -339,7 +339,7 @@ async function upsertAppUser(
 
 async function authenticateOwner(db: D1Database, accessCode: string): Promise<AppUserRow> {
   const configuredCode = normalizeAccessCode(env.OWNER_ACCESS_CODE ?? "");
-  if (configuredCode.length < 12) throw new Error("لم يكتمل إعداد دخول المالك");
+  if (configuredCode.length < 10) throw new Error("لم يكتمل إعداد دخول المشرف");
   if (!await secretsEqual(accessCode, configuredCode)) {
     throw new Error("بيانات الدخول غير صحيحة");
   }
@@ -348,13 +348,13 @@ async function authenticateOwner(db: D1Database, accessCode: string): Promise<Ap
   const identity: PortalIdentity = {
     userId: "portal:owner",
     email: "owner@translator-portal.local",
-    displayName: "المالك",
+    displayName: "المشرف",
     e2eUsername: null,
   };
   await upsertAppUser(db, identity, "owner", null, now);
   const user = await db.prepare("SELECT * FROM app_users WHERE user_id = ?")
     .bind(identity.userId).first<AppUserRow>();
-  if (!user) throw new Error("تعذر تجهيز حساب المالك");
+  if (!user) throw new Error("تعذر تجهيز حساب المشرف");
   return user;
 }
 
@@ -850,7 +850,7 @@ export async function resetE2eState(db: D1Database, session: PortalSession) {
 }
 
 function requireOwner(session: PortalSession) {
-  if (session.role !== "owner") throw new Error("هذه العملية متاحة للمالك فقط");
+  if (session.role !== "owner") throw new Error("هذه العملية متاحة للمشرف فقط");
 }
 
 function requireTranslator(session: PortalSession) {

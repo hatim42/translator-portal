@@ -20,10 +20,10 @@ test.describe.serial("translator operations", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "مرحباً بك" })).toBeVisible();
 
-    await page.getByRole("button", { name: "المالك", exact: true }).click();
+    await page.getByRole("button", { name: "المشرف", exact: true }).click();
     await page.getByTestId("login-code").fill("E2E-OWNER-CODE-2026");
     await page.getByTestId("login-submit").click();
-    await expect(page.getByTestId("user-name")).toHaveText("المالك");
+    await expect(page.getByTestId("user-name")).toHaveText("المشرف");
 
     await page.getByRole("button", { name: "المترجمون", exact: true }).first().click();
     const personCard = page.locator(".person-card").filter({ hasText: person.name });
@@ -163,7 +163,7 @@ test.describe.serial("translator operations", () => {
       });
       const page = await context.newPage();
       await page.goto("/");
-      await expect(page.getByTestId("user-name")).toHaveText("المالك");
+      await expect(page.getByTestId("user-name")).toHaveText("المشرف");
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(overflow).toBeLessThanOrEqual(1);
       await page.screenshot({ path: `test-results/layout-${viewport.name}.png`, fullPage: true });
