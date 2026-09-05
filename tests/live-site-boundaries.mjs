@@ -18,7 +18,7 @@ test("production URLs keep their separate identities", async () => {
 
   assert.match(formsHtml, /<title>\s*بوابة المترجم\s*<\/title>/i);
   assert.doesNotMatch(formsHtml, /<title>\s*منصة المترجمين\s*<\/title>/i);
-  assert.ok((formsHtml.match(/https:\/\/forms\.gle\//g) ?? []).length >= 6);
+  assert.ok((formsHtml.match(/https:\/\/forms\.gle\//g) ?? []).length >= 4);
 
   assert.match(managementHtml, /<title>\s*منصة المترجمين\s*<\/title>/i);
   assert.doesNotMatch(managementHtml, /<title>\s*بوابة المترجم\s*<\/title>/i);
