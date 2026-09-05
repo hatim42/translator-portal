@@ -4,7 +4,7 @@ import { access, readFile } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
 
-test("forms portal source keeps its public identity and only the August payroll form", async () => {
+test("forms portal keeps only the August payroll form and no shifts link", async () => {
   const [rootHtml, formsHtml] = await Promise.all([
     readFile(new URL("index.html", root), "utf8"),
     readFile(new URL("forms/index.html", root), "utf8"),
@@ -15,12 +15,13 @@ test("forms portal source keeps its public identity and only the August payroll 
     assert.doesNotMatch(html, /<title>\s*منصة المترجمين\s*<\/title>/i);
 
     const formLinks = [...html.matchAll(/https:\/\/forms\.gle\/[A-Za-z0-9]+/g)].map((match) => match[0]);
-    assert.equal(new Set(formLinks).size, 5);
+    assert.equal(new Set(formLinks).size, 4);
 
     assert.match(html, /href="https:\/\/forms\.gle\/noHPKwv2E1169Zss5"[^>]*>[\s\S]*?<span class="month-number">08<\/span>[\s\S]*?<strong>أغسطس 2026<\/strong>/);
     assert.equal((html.match(/<a class="month(?: current)?"/g) || []).length, 1);
     assert.doesNotMatch(html, /<strong>(?:يوليو|يونيو|مايو) 2026<\/strong>/);
     assert.doesNotMatch(html, /<span class="month-number">(?:07|06|05)<\/span>/);
+    assert.doesNotMatch(html, /تسجيل ورديات|Vpii9nconX4R7Fxe9/);
   }
 
   await access(new URL("assets/religious-affairs-logo.jpg", root));
