@@ -15,7 +15,7 @@ test("forms portal source keeps its public identity and only the August payroll 
     assert.doesNotMatch(html, /<title>\s*منصة المترجمين\s*<\/title>/i);
 
     const formLinks = [...html.matchAll(/https:\/\/forms\.gle\/[A-Za-z0-9]+/g)].map((match) => match[0]);
-    assert.ok(new Set(formLinks).size >= 6);
+    assert.equal(new Set(formLinks).size, 5);
 
     assert.match(html, /href="https:\/\/forms\.gle\/noHPKwv2E1169Zss5"[^>]*>[\s\S]*?<span class="month-number">08<\/span>[\s\S]*?<strong>أغسطس 2026<\/strong>/);
     assert.equal((html.match(/<a class="month(?: current)?"/g) || []).length, 1);
