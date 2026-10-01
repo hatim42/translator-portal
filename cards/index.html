@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>طباعة بطاقات المترجمين</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><h1>طباعة بطاقات المترجمين</h1><p>تصميم معتمد وقابل للتعديل والطباعة</p></header>
+<main>
+<section class="panel"><h2>الأسماء والإعدادات</h2><div class="body">
+<div class="status" id="statusBox">جاري تحميل الأسماء...</div>
+<div class="field"><label>عنوان البطاقة</label><input id="cardTitle" value="بطاقة مترجم"></div>
+<div class="field"><label>تاريخ انتهاء البطاقة</label><input id="expiryDate" value="2026-09-01"></div>
+<div class="field"><label>النص السفلي</label><input id="footerText" value="وكالة الشؤون الدعوية والإرشادية بالمسجد النبوي"></div>
+<div class="field"><label>الإدارة الافتراضية للأسماء الجديدة</label><select id="defaultDept"></select></div>
+<div class="actions no-print"><button type="button" id="refreshBtn">تحديث المعاينة</button><button type="button" id="printBtn">طباعة البطاقات فقط</button><button class="secondary" type="button" id="downloadBtn">تحميل نسخة HTML</button></div>
+<div class="kpis"><div class="kpi"><strong id="totalCount">0</strong><span>الأسماء</span></div><div class="kpi"><strong id="selectedCount">0</strong><span>المحددة</span></div><div class="kpi"><strong id="pageCount">0</strong><span>صفحات</span></div></div>
+<div class="field"><label>بحث عن اسم</label><input id="search" placeholder="اكتب جزء من الاسم..."></div>
+<div class="actions no-print"><button class="secondary" type="button" id="selectAllBtn">تحديد الجميع</button><button class="secondary" type="button" id="clearAllBtn">إلغاء التحديد</button><button class="secondary" type="button" id="invertBtn">عكس التحديد</button></div>
+<div class="field no-print"><label>إضافة أسماء جديدة</label><textarea id="pasteNames" placeholder="الصق الأسماء، كل اسم في سطر..."></textarea><div class="actions"><button class="secondary" type="button" id="addNamesBtn">إضافة الأسماء</button><button class="secondary" type="button" id="selectPastedBtn">تحديد الأسماء الملصقة فقط</button></div></div>
+<div class="names-box" id="employeeList"><div class="emp-head"><span>✓</span><span>م</span><span>الاسم</span><span>الإدارة</span><span>حذف</span></div></div>
+</div></section>
+<section class="panel"><h2>المعاينة</h2><div class="preview-wrap"><div id="a4"></div></div></section>
+</main>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
