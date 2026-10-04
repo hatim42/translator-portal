@@ -4,7 +4,7 @@ import { access, readFile } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
 
-test("forms portal keeps September current, archived months, and shifts registration", async () => {
+test("forms portal keeps September current, archived months, and translator registration", async () => {
   const [rootHtml, formsHtml] = await Promise.all([
     readFile(new URL("index.html", root), "utf8"),
     readFile(new URL("forms/index.html", root), "utf8"),
@@ -15,7 +15,7 @@ test("forms portal keeps September current, archived months, and shifts registra
     assert.doesNotMatch(html, /<title>\s*منصة المترجمين\s*<\/title>/i);
 
     const formLinks = [...html.matchAll(/https:\/\/forms\.gle\/[A-Za-z0-9]+/g)].map((match) => match[0]);
-    assert.equal(new Set(formLinks).size, 9);
+    assert.equal(new Set(formLinks).size, 8);
 
     assert.match(html, /<a class="month current" href="https:\/\/forms\.gle\/z3UAzcB4yDLC18Mt9"[^>]*>[\s\S]*?<span class="month-number">09<\/span>[\s\S]*?<strong>سبتمبر 2026<\/strong>/);
     assert.match(html, /href="https:\/\/forms\.gle\/noHPKwv2E1169Zss5"[^>]*>[\s\S]*?<span class="month-number">08<\/span>[\s\S]*?<strong>أغسطس 2026<\/strong>/);
@@ -28,7 +28,8 @@ test("forms portal keeps September current, archived months, and shifts registra
     assert.ok(html.indexOf("يوليو 2026") < html.indexOf("يونيو 2026"));
     assert.ok(html.indexOf("يونيو 2026") < html.indexOf("مايو 2026"));
 
-    assert.match(html, /href="https:\/\/forms\.gle\/Vpii9nconX4R7Fxe9"[^>]*>[\s\S]*?<strong>تسجيل ورديات<\/strong>/);
+    assert.doesNotMatch(html, /Vpii9nconX4R7Fxe9|تسجيل ورديات|تسجيل الوردية وأيام الراحة/);
+    assert.match(html, /href="https:\/\/forms\.gle\/UkavHSdaiA9ffY8o6"[^>]*>[\s\S]*?<strong>تسجيل بيانات المترجمين<\/strong>/);
   }
 
   await access(new URL("assets/religious-affairs-logo.jpg", root));
