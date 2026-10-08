@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0f5b4c">
-  <meta name="description" content="بوابة المترجم للوصول السريع إلى النماذج والتحقق من نزول المكافآت.">
+  <meta name="description" content="بوابة المترجم للنماذج والتحقق من نزول المكافآت.">
   <title>بوابة المترجم</title>
   <style>
     :root {
@@ -75,31 +75,7 @@
       font-size:11px;
       font-weight:700;
     }
-    .portal-name strong { display:block;font-size:22px;color:var(--green-950); }
-
-    .intro {
-      padding:11px 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      color:#fff;
-      background:linear-gradient(125deg,var(--green-950),var(--green-700));
-      border-radius:20px;
-      box-shadow:0 10px 28px rgba(8,62,53,.15);
-    }
-    .intro h1 { margin:0;font-size:21px; }
-    .intro p { margin:3px 0 0;color:rgba(255,255,255,.76);font-size:11px; }
-    .intro-badge {
-      padding:7px 11px;
-      border-radius:999px;
-      white-space:nowrap;
-      color:#f4dfa2;
-      background:rgba(255,255,255,.1);
-      border:1px solid rgba(255,255,255,.12);
-      font-size:10px;
-      font-weight:700;
-    }
+    .portal-name h1 { margin:0;font-size:22px;color:var(--green-950); }
 
     .actions {
       display:grid;
@@ -252,11 +228,7 @@
       .topbar { min-height:75px;padding:4px 9px;border-radius:18px; }
       .official-logo { width:220px;max-height:66px; }
       .portal-name small { font-size:8px; }
-      .portal-name strong { font-size:16px; }
-      .intro { padding:9px 12px;border-radius:16px; }
-      .intro h1 { font-size:17px; }
-      .intro p { font-size:9px; }
-      .intro-badge { padding:6px 8px;font-size:8px; }
+      .portal-name h1 { font-size:16px; }
       .actions { grid-template-columns:repeat(2,minmax(0,1fr));gap:7px; }
       .actions > .action:last-child { grid-column:1 / -1; }
       .action { min-height:86px;padding:10px;border-radius:16px;gap:6px; }
@@ -280,8 +252,7 @@
 
     @media (max-width:410px) {
       .official-logo { width:190px; }
-      .portal-name strong { font-size:14px; }
-      .intro-badge { display:none; }
+      .portal-name h1 { font-size:14px; }
       .action { min-height:82px; }
       .months { grid-template-columns:1fr; }
       .months.open { max-height:230px; }
@@ -290,8 +261,6 @@
     @media (max-height:670px) and (max-width:760px) {
       .topbar { min-height:66px; }
       .official-logo { max-height:57px; }
-      .intro { padding:7px 10px; }
-      .intro p { display:none; }
       .action { min-height:76px;padding:8px; }
       .finance { padding:8px 10px; }
       .footer { display:none; }
@@ -309,17 +278,9 @@
       <img class="official-logo" src="../assets/religious-affairs-logo.jpg" alt="شعار رئاسة الشؤون الدينية بالمسجد الحرام والمسجد النبوي">
       <div class="portal-name">
         <small>وكالة الشؤون الدعوية والإرشادية</small>
-        <strong>بوابة المترجم</strong>
+        <h1 id="portal-title">بوابة المترجم</h1>
       </div>
     </header>
-
-    <section class="intro" aria-labelledby="portal-title">
-      <div>
-        <h1 id="portal-title">الوصول السريع للنماذج</h1>
-        <p>اختر الخدمة المطلوبة مباشرة من الصفحة.</p>
-      </div>
-      <div class="intro-badge">الرابط الموحد</div>
-    </section>
 
     <section class="actions" aria-label="النماذج الأساسية">
       <a class="action primary" href="https://forms.gle/KjMKRYrpv9DPLbYa6" target="_blank" rel="noopener">
@@ -339,7 +300,7 @@
           </div>
           <span class="order">02</span>
         </div>
-        <div><strong>تسجيل الغياب والاستئذان</strong><span class="hint">فتح النموذج مباشرة</span></div>
+        <div><strong>تسجيل الغياب والاستئذان والإجازة</strong><span class="hint">فتح النموذج مباشرة</span></div>
       </a>
 
       <button class="action reward" id="rewardAction" type="button" aria-controls="months" aria-expanded="false">
