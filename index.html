@@ -103,7 +103,7 @@
 
     .actions {
       display:grid;
-      grid-template-columns:repeat(4,minmax(0,1fr));
+      grid-template-columns:repeat(5,minmax(0,1fr));
       gap:9px;
     }
     .action {
@@ -258,6 +258,7 @@
       .intro p { font-size:9px; }
       .intro-badge { padding:6px 8px;font-size:8px; }
       .actions { grid-template-columns:repeat(2,minmax(0,1fr));gap:7px; }
+      .actions > .action:last-child { grid-column:1 / -1; }
       .action { min-height:86px;padding:10px;border-radius:16px;gap:6px; }
       .icon { width:34px;height:34px;flex-basis:34px;border-radius:11px; }
       .icon svg { width:20px;height:20px; }
@@ -359,6 +360,16 @@
           <span class="order">04</span>
         </div>
         <div><strong>تسجيل بيانات المترجمين</strong><span class="hint">الوصول إلى نموذج البيانات</span></div>
+      </a>
+
+      <a class="action" href="https://forms.gle/sqhKUSsMRxbt5ftn8" target="_blank" rel="noopener">
+        <div class="action-top">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M8 4h8l4 4v12H4V4h4z"/><path d="M16 4v5h4M8 13h8M8 17h5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="order">05</span>
+        </div>
+        <div><strong>تسجيل الملاحظات الإدارية والميدانية</strong><span class="hint">لفت نظر · محضر · ملاحظات ميدانية</span></div>
       </a>
     </section>
 
