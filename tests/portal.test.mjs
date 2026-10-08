@@ -15,7 +15,7 @@ test("forms portal keeps September current, archived months, and translator regi
     assert.doesNotMatch(html, /<title>\s*منصة المترجمين\s*<\/title>/i);
 
     const formLinks = [...html.matchAll(/https:\/\/forms\.gle\/[A-Za-z0-9]+/g)].map((match) => match[0]);
-    assert.equal(new Set(formLinks).size, 8);
+    assert.equal(new Set(formLinks).size, 9);
 
     assert.match(html, /<a class="month current" href="https:\/\/forms\.gle\/z3UAzcB4yDLC18Mt9"[^>]*>[\s\S]*?<span class="month-number">09<\/span>[\s\S]*?<strong>سبتمبر 2026<\/strong>/);
     assert.match(html, /href="https:\/\/forms\.gle\/noHPKwv2E1169Zss5"[^>]*>[\s\S]*?<span class="month-number">08<\/span>[\s\S]*?<strong>أغسطس 2026<\/strong>/);
@@ -30,6 +30,7 @@ test("forms portal keeps September current, archived months, and translator regi
 
     assert.doesNotMatch(html, /Vpii9nconX4R7Fxe9|تسجيل ورديات|تسجيل الوردية وأيام الراحة/);
     assert.match(html, /href="https:\/\/forms\.gle\/UkavHSdaiA9ffY8o6"[^>]*>[\s\S]*?<strong>تسجيل بيانات المترجمين<\/strong>/);
+    assert.match(html, /href="https:\/\/forms\.gle\/sqhKUSsMRxbt5ftn8"[^>]*>[\s\S]*?<strong>تسجيل الملاحظات الإدارية والميدانية<\/strong><span class="hint">لفت نظر · محضر · ملاحظات ميدانية<\/span>/);
   }
 
   await access(new URL("assets/religious-affairs-logo.jpg", root));
