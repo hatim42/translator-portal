@@ -38,13 +38,15 @@ jobs:
           cp index.html .pages/index.html
           cp -R assets .pages/assets
           cp -R forms .pages/forms
+          cp -R cards .pages/cards
+          test -f .pages/cards/index.html
           touch .pages/.nojekyll
       - name: Publish approved portal files
         shell: bash
         run: |
           git -C .pages config user.name "github-actions[bot]"
           git -C .pages config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C .pages add .nojekyll index.html assets forms
+          git -C .pages add .nojekyll index.html assets forms cards
           if git -C .pages diff --cached --quiet; then
             echo "No Pages changes to publish."
             exit 0
