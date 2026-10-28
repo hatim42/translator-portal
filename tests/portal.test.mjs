@@ -29,7 +29,8 @@ test("forms portal keeps September current, archived months, and translator regi
     assert.ok(html.indexOf("يونيو 2026") < html.indexOf("مايو 2026"));
 
     assert.doesNotMatch(html, /Vpii9nconX4R7Fxe9|تسجيل ورديات|تسجيل الوردية وأيام الراحة/);
-    assert.match(html, /href="https:\/\/forms\.gle\/UkavHSdaiA9ffY8o6"[^>]*>[\s\S]*?<strong>تسجيل بيانات المترجمين<\/strong>/);
+    assert.match(html, /href="https:\/\/forms\.gle\/s4TVRmf1566JgHrV7"[^>]*>[\s\S]*?<strong>تسجيل بيانات المترجمين في وكالة الشؤون الدعوية والإرشادية<\/strong>/);
+    assert.doesNotMatch(html, /UkavHSdaiA9ffY8o6/);
     assert.match(html, /href="https:\/\/forms\.gle\/sqhKUSsMRxbt5ftn8"[^>]*>[\s\S]*?<strong>تسجيل الملاحظات الإدارية والميدانية<\/strong><span class="hint">لفت نظر · محضر · ملاحظات ميدانية<\/span>/);
   }
 
