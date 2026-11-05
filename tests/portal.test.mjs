@@ -16,6 +16,8 @@ test("forms portal lists October first, keeps earlier months and translator regi
 
     const formLinks = [...html.matchAll(/https:\/\/forms\.gle\/[A-Za-z0-9]+/g)].map((match) => match[0]);
     assert.equal(new Set(formLinks).size, 10);
+    assert.match(html, /href="https:\/\/forms\.gle\/xxfeev73XeoibYeT7"[^>]*>[\s\S]*?<strong>الإحصاء اليومي<\/strong>/);
+    assert.doesNotMatch(html, /KjMKRYrpv9DPLbYa6/);
 
     assert.match(html, /<a class="month current" href="https:\/\/forms\.gle\/XEyD6JskHpdxLpH96"[^>]*>[\s\S]*?<span class="month-number">10<\/span>[\s\S]*?<strong>أكتوبر 2026<\/strong>/);
     assert.match(html, /<a class="month" href="https:\/\/forms\.gle\/z3UAzcB4yDLC18Mt9"[^>]*>[\s\S]*?<span class="month-number">09<\/span>[\s\S]*?<strong>سبتمبر 2026<\/strong>/);
